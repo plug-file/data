@@ -31,6 +31,7 @@ SYMBOLS = {
         {"symbol": "TSLA",  "name": "Tesla"},
     ],
     "rates": [
+        # 注: 米2年債（^IRX=3ヶ月, yfinanceに2年債シンボルなし → fetch_fred_us2y()で取得）
         {"symbol": "^TNX", "name": "米10年債利回り", "tag": "US10Y"},
         {"symbol": "^TYX", "name": "米30年債利回り", "tag": "US30Y"},
     ],
@@ -128,6 +129,136 @@ def fetch_group(group_key: str) -> list:
     return results
 
 
+def fetch_fred_us2y() -> dict:
+    """
+    FRED API（APIキー不要）から米2年債利回り（DGS2）を取得する。
+    https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2
+    日次データ（営業日のみ）。
+    """
+    url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2"
+    print(f"  Fetching US 2Y yield from FRED ...")
+    meta = {"symbol": "US2Y", "name": "米2年債利回り", "tag": "US2Y"}
+    try:
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
+        lines = r.text.strip().splitlines()
+        # ヘッダー行をスキップ。欠損値は "." で表現されるため除外
+        data_rows = []
+        for l in lines[1:]:
+            cols = l.split(",")
+            if len(cols) < 2:
+                continue
+            if cols[1].strip() == ".":  # 欠損
+                continue
+            data_rows.append(l)
+
+        recent = data_rows[-30:]
+        dates, closes = [], []
+        for row in recent:
+            cols = row.split(",")
+            date_raw = cols[0].strip()   # YYYY-MM-DD
+            val_str  = cols[1].strip()
+            try:
+                val = round(float(val_str), 4)
+                mm_dd = date_raw[5:7] + "/" + date_raw[8:10]
+                closes.append(val)
+                dates.append(mm_dd)
+            except ValueError:
+                pass
+
+        return _build_bond_result(
+            symbol="US2Y", name="米2年債利回り", tag="US2Y",
+            dates=dates, closes=closes
+        )
+    except Exception as e:
+        print(f"  ⚠ US2Y fetch error: {e}", file=sys.stderr)
+        return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+
+
+def fetch_ff_rate() -> dict:
+    """
+    FRED API（APIキー不要モード）からFFレートの実効値を取得する。
+    https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF
+    """
+    url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF"
+    print(f"  Fetching FF rate from FRED ...")
+    meta = {"symbol": "FEDFUNDS", "name": "FFレート（実効値）", "tag": "FEDFUNDS"}
+    try:
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
+        lines = r.text.strip().splitlines()
+        data_rows = [l for l in lines[1:] if l.strip() and "." in l]
+        recent = data_rows[-30:]
+
+        dates, closes = [], []
+        for row in recent:
+            cols = row.split(",")
+            if len(cols) < 2:
+                continue
+            date_raw = cols[0].strip()  # YYYY-MM-DD
+            val_str  = cols[1].strip()
+            try:
+                val = round(float(val_str), 4)
+                mm_dd = date_raw[5:7] + "/" + date_raw[8:10]
+                closes.append(val)
+                dates.append(mm_dd)
+            except ValueError:
+                pass
+
+        return _build_bond_result(
+            symbol="FEDFUNDS", name="FFレート（実効値）", tag="FEDFUNDS",
+            dates=dates, closes=closes
+        )
+    except Exception as e:
+        print(f"  ⚠ FF rate fetch error: {e}", file=sys.stderr)
+        return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+
+
+def fetch_sp500_per() -> dict:
+    """
+    multpl.com から S&P500 の実績PER（Trailing P/E）を取得する。
+    https://www.multpl.com/s-p-500-pe-ratio/table/by-month
+    """
+    url = "https://www.multpl.com/s-p-500-pe-ratio/table/by-month"
+    print(f"  Fetching S&P500 PER from multpl.com ...")
+    meta = {"symbol": "SP500PE", "name": "S&P500 PER（実績）", "tag": "SP500_PE"}
+    try:
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; MarketDashboard/1.0)"}
+        r = requests.get(url, timeout=15, headers=headers)
+        r.raise_for_status()
+
+        # テーブルから月次PERを抽出
+        # 行フォーマット例: <tr><td>Mar 1, 2026</td><td>26.15</td></tr>
+        rows = re.findall(
+            r'<tr>\s*<td[^>]*>([\w ,]+\d{4})</td>\s*<td[^>]*>([\d.]+)</td>',
+            r.text
+        )
+
+        closes, dates = [], []
+        for date_str, val_str in rows[:30]:
+            try:
+                val = round(float(val_str), 2)
+                # "Mar 1, 2026" → "03/01" のような短縮形に変換
+                from datetime import datetime as _dt
+                d = _dt.strptime(date_str.strip(), "%b %d, %Y")
+                closes.append(val)
+                dates.append(d.strftime("%m/%d"))
+            except (ValueError, TypeError):
+                pass
+
+        # 最新が先頭なので逆順に
+        closes = closes[::-1]
+        dates  = dates[::-1]
+
+        return _build_bond_result(
+            symbol="SP500PE", name="S&P500 PER（実績）", tag="SP500_PE",
+            dates=dates, closes=closes
+        )
+    except Exception as e:
+        print(f"  ⚠ S&P500 PER fetch error: {e}", file=sys.stderr)
+        return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+
+
 def fetch_mof_jgb_yields() -> list:
     """
     財務省の国債金利情報CSV（日次更新）から日本10年債・30年債の利回りを取得する。
@@ -160,6 +291,7 @@ def fetch_mof_jgb_yields() -> list:
         # 直近30日分（末尾から最大30行）
         recent = data_rows[-30:]
 
+        dates_2y,  closes_2y  = [], []
         dates_10y, closes_10y = [], []
         dates_30y, closes_30y = [], []
 
@@ -177,9 +309,17 @@ def fetch_mof_jgb_yields() -> list:
             dd = m.group(3).zfill(2)
             date_str = f"{mm}/{dd}"
 
-            # 10Y = cols[10], 30Y = cols[14]
+            # 2Y = cols[2], 10Y = cols[10], 30Y = cols[14]
+            val_2y  = cols[2].strip()  if len(cols) > 2  else "-"
             val_10y = cols[10].strip() if len(cols) > 10 else "-"
             val_30y = cols[14].strip() if len(cols) > 14 else "-"
+
+            if val_2y and val_2y != "-":
+                try:
+                    closes_2y.append(round(float(val_2y), 4))
+                    dates_2y.append(date_str)
+                except ValueError:
+                    pass
 
             if val_10y and val_10y != "-":
                 try:
@@ -194,6 +334,12 @@ def fetch_mof_jgb_yields() -> list:
                     dates_30y.append(date_str)
                 except ValueError:
                     pass
+
+        # 2年債
+        results.append(_build_bond_result(
+            symbol="JP2Y", name="日本2年債利回り", tag="JP2Y_YIELD",
+            dates=dates_2y, closes=closes_2y
+        ))
 
         # 10年債
         results.append(_build_bond_result(
@@ -246,6 +392,8 @@ def _build_bond_result(symbol, name, tag, dates, closes):
 
 def _empty_jgb_results():
     return [
+        {"symbol": "JP2Y",  "name": "日本2年債利回り",  "tag": "JP2Y_YIELD",
+         "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []},
         {"symbol": "JP10Y", "name": "日本10年債利回り", "tag": "JP10Y_YIELD",
          "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []},
         {"symbol": "JP30Y", "name": "日本30年債利回り", "tag": "JP30Y_YIELD",
@@ -268,13 +416,34 @@ def main():
         # vix は単体なのでリストの最初の要素を直接入れる
         output[group_key] = results[0] if group_key == "vix" else results
 
-    # 財務省CSV: 日本国債利回り → rates に追加
+    # 財務省CSV: 日本国債利回り → rates に追加（2Y / 10Y / 30Y）
     print("\n[mof_jgb_yields]")
     jgb_results = fetch_mof_jgb_yields()
     for result in jgb_results:
         output["rates"].append(result)
         status = "✓" if result["ok"] else "✗"
         print(f"  {status} {result['symbol']}: {result.get('price')}")
+
+    # FRED: 米2年債利回り → rates に追加
+    print("\n[fred_us2y]")
+    us2y = fetch_fred_us2y()
+    output["rates"].append(us2y)
+    status = "✓" if us2y["ok"] else "✗"
+    print(f"  {status} {us2y['symbol']}: {us2y.get('price')}")
+
+    # FRED: FFレート → rates に追加
+    print("\n[ff_rate]")
+    ff = fetch_ff_rate()
+    output["rates"].append(ff)
+    status = "✓" if ff["ok"] else "✗"
+    print(f"  {status} {ff['symbol']}: {ff.get('price')}")
+
+    # multpl.com: S&P500 PER → output["sp500_pe"] に追加
+    print("\n[sp500_per]")
+    pe = fetch_sp500_per()
+    output["sp500_pe"] = pe
+    status = "✓" if pe["ok"] else "✗"
+    print(f"  {status} {pe['symbol']}: {pe.get('price')}")
 
     # docs/data.json に保存
     out_path = "docs/data.json"
