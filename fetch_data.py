@@ -1,13 +1,13 @@
 """
 バフェット太郎 マーケットダッシュボード — データ取得スクリプト
 yfinance でデータを取得し、docs/data.json に保存する。
-Twelvedata API で日本国債利回り（JP10Y / JP30Y）を補完取得する。
+財務省の国債金利情報CSVで日本国債利回り（10Y / 30Y）を補完取得する。
 GitHub Actions から毎日自動実行される。
 """
 
 import json
-import os
 import sys
+import re
 from datetime import datetime, timezone
 import yfinance as yf
 import requests
@@ -130,84 +130,129 @@ def fetch_group(group_key: str) -> list:
     return results
 
 
-def fetch_twelvedata_bond(symbol: str, name: str, tag: str) -> dict:
-    """Twelvedata API で日本国債利回りを取得する"""
-    api_key = os.environ.get("TWELVEDATA_API_KEY", "")
-    meta = {"symbol": symbol, "name": name, "tag": tag}
-    if not api_key:
-        print(f"  ⚠ TWELVEDATA_API_KEY が未設定: {symbol}", file=sys.stderr)
-        return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+def fetch_mof_jgb_yields() -> list:
+    """
+    財務省の国債金利情報CSV（日次更新）から日本10年債・30年債の利回りを取得する。
+    https://www.mof.go.jp/jgbs/reference/interest_rate/jgbcm.csv
+    CSV列: 日付,1Y,2Y,3Y,4Y,5Y,6Y,7Y,8Y,9Y,10Y,15Y,20Y,25Y,30Y,40Y
+    """
+    url = "https://www.mof.go.jp/jgbs/reference/interest_rate/jgbcm.csv"
+    print(f"  Fetching JGB yields from MOF CSV ...")
 
+    results = []
     try:
-        # 直近1ヶ月の日足データを取得
-        url = "https://api.twelvedata.com/time_series"
-        params = {
-            "symbol": symbol,
-            "interval": "1day",
-            "outputsize": 30,
-            "apikey": api_key,
-        }
-        print(f"  Fetching {symbol} from Twelvedata ...")
-        r = requests.get(url, params=params, timeout=15)
+        r = requests.get(url, timeout=15)
         r.raise_for_status()
-        data = r.json()
 
-        if data.get("status") == "error":
-            print(f"  ⚠ Twelvedata error for {symbol}: {data.get('message','')}", file=sys.stderr)
-            return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+        # CSV は Shift_JIS エンコーディング
+        text = r.content.decode("shift_jis", errors="replace")
+        lines = text.strip().splitlines()
 
-        values = data.get("values", [])
-        if not values:
-            return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+        # ヘッダー行・コメント行をスキップし、データ行を抽出
+        data_rows = []
+        for line in lines:
+            # データ行は和暦日付で始まる: R7.3.14 や H30.1.5 など
+            if re.match(r'^[SHMRT]\d+\.', line):
+                data_rows.append(line)
 
-        # values は新しい順 → 古い順に反転
-        values = list(reversed(values))
+        if not data_rows:
+            print("  ⚠ MOF CSV: データ行が見つかりません", file=sys.stderr)
+            return _empty_jgb_results()
 
-        closes = []
-        dates = []
-        for v in values:
-            c = float(v["close"])
-            closes.append(round(c, 4))
-            # "2026-03-14" → "03/14"
-            dt = v["datetime"]
-            dates.append(dt[5:7] + "/" + dt[8:10])
+        # 直近30日分（末尾から最大30行）
+        recent = data_rows[-30:]
 
-        price = closes[-1]
-        prev_close = closes[-2] if len(closes) >= 2 else None
+        dates_10y, closes_10y = [], []
+        dates_30y, closes_30y = [], []
 
-        change_pct = None
-        if price is not None and prev_close is not None and prev_close != 0:
-            change_pct = round((price - prev_close) / abs(prev_close) * 100, 3)
+        for row_str in recent:
+            cols = row_str.split(",")
+            if len(cols) < 15:
+                continue
 
-        high_val = max(closes) if closes else None
-        low_val = min(closes) if closes else None
-        from_high = None
-        if price and high_val and high_val != 0:
-            from_high = round((price - high_val) / high_val * 100, 2)
+            # 日付を和暦→MM/DD に変換
+            raw_date = cols[0].strip()
+            m = re.match(r'[SHMRT](\d+)\.(\d+)\.(\d+)', raw_date)
+            if not m:
+                continue
+            mm = m.group(2).zfill(2)
+            dd = m.group(3).zfill(2)
+            date_str = f"{mm}/{dd}"
 
-        return {
-            **meta,
-            "price": round(price, 4),
-            "prev_close": round(prev_close, 4) if prev_close else None,
-            "high_52w": high_val,
-            "low_52w": low_val,
-            "change_pct": change_pct,
-            "from_high": from_high,
-            "dates": dates,
-            "closes": closes,
-            "ok": True,
-        }
+            # 10Y = cols[10], 30Y = cols[14]
+            val_10y = cols[10].strip() if len(cols) > 10 else "-"
+            val_30y = cols[14].strip() if len(cols) > 14 else "-"
+
+            if val_10y and val_10y != "-":
+                try:
+                    closes_10y.append(round(float(val_10y), 4))
+                    dates_10y.append(date_str)
+                except ValueError:
+                    pass
+
+            if val_30y and val_30y != "-":
+                try:
+                    closes_30y.append(round(float(val_30y), 4))
+                    dates_30y.append(date_str)
+                except ValueError:
+                    pass
+
+        # 10年債
+        results.append(_build_bond_result(
+            symbol="JP10Y", name="日本10年債利回り", tag="JP10Y_YIELD",
+            dates=dates_10y, closes=closes_10y
+        ))
+
+        # 30年債
+        results.append(_build_bond_result(
+            symbol="JP30Y", name="日本30年債利回り", tag="JP30Y_YIELD",
+            dates=dates_30y, closes=closes_30y
+        ))
+
+        return results
 
     except Exception as e:
-        print(f"  ⚠ Twelvedata {symbol}: {e}", file=sys.stderr)
+        print(f"  ⚠ MOF CSV fetch error: {e}", file=sys.stderr)
+        return _empty_jgb_results()
+
+
+def _build_bond_result(symbol, name, tag, dates, closes):
+    meta = {"symbol": symbol, "name": name, "tag": tag}
+    if not closes or len(closes) < 1:
         return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
 
+    price = closes[-1]
+    prev_close = closes[-2] if len(closes) >= 2 else None
 
-# Twelvedata で取得する日本国債利回り
-TWELVEDATA_BONDS = [
-    {"symbol": "JP10Y", "name": "日本10年債利回り", "tag": "JP10Y_YIELD"},
-    {"symbol": "JP30Y", "name": "日本30年債利回り", "tag": "JP30Y_YIELD"},
-]
+    change_pct = None
+    if price is not None and prev_close is not None and prev_close != 0:
+        change_pct = round((price - prev_close) / abs(prev_close) * 100, 3)
+
+    high_val = max(closes)
+    low_val = min(closes)
+    from_high = round((price - high_val) / high_val * 100, 2) if high_val != 0 else None
+
+    return {
+        **meta,
+        "price": round(price, 4),
+        "prev_close": round(prev_close, 4) if prev_close else None,
+        "high_52w": high_val,
+        "low_52w": low_val,
+        "change_pct": change_pct,
+        "from_high": from_high,
+        "dates": dates,
+        "closes": closes,
+        "ok": True,
+    }
+
+
+def _empty_jgb_results():
+    return [
+        {"symbol": "JP10Y", "name": "日本10年債利回り", "tag": "JP10Y_YIELD",
+         "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []},
+        {"symbol": "JP30Y", "name": "日本30年債利回り", "tag": "JP30Y_YIELD",
+         "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []},
+    ]
 
 
 def main():
@@ -225,13 +270,13 @@ def main():
         # vix は単体なのでリストの最初の要素を直接入れる
         output[group_key] = results[0] if group_key == "vix" else results
 
-    # Twelvedata: 日本国債利回り → rates に追加
-    print("\n[twelvedata_bonds]")
-    for bond in TWELVEDATA_BONDS:
-        result = fetch_twelvedata_bond(bond["symbol"], bond["name"], bond["tag"])
+    # 財務省CSV: 日本国債利回り → rates に追加
+    print("\n[mof_jgb_yields]")
+    jgb_results = fetch_mof_jgb_yields()
+    for result in jgb_results:
         output["rates"].append(result)
         status = "✓" if result["ok"] else "✗"
-        print(f"  {status} {bond['symbol']}: {result.get('price')}")
+        print(f"  {status} {result['symbol']}: {result.get('price')}")
 
     # docs/data.json に保存
     out_path = "docs/data.json"
