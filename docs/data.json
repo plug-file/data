@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-03-16 05:01 UTC",
-  "updated_jst": "2026年03月16日 14:01 JST",
+  "updated_at": "2026-03-16 05:08 UTC",
+  "updated_jst": "2026年03月16日 14:08 JST",
   "indices": [
     {
       "symbol": "^GSPC",
@@ -164,12 +164,12 @@
     {
       "symbol": "^N225",
       "name": "日経平均",
-      "price": 53623.5312,
+      "price": 53659.8906,
       "prev_close": 53860.8398,
       "high_52w": 59332.4297,
       "low_52w": 30792.7402,
-      "change_pct": -0.441,
-      "from_high": -9.62,
+      "change_pct": -0.373,
+      "from_high": -9.56,
       "dates": [
         "02/16",
         "02/17",
@@ -212,18 +212,18 @@
         55025.3711,
         54452.9609,
         53819.6094,
-        53623.5312
+        53659.8906
       ],
       "ok": true
     },
     {
       "symbol": "NIY=F",
       "name": "日経平均先物",
-      "price": 53375.0,
-      "prev_close": 53420.0,
+      "price": 53370.0,
+      "prev_close": 53375.0,
       "high_52w": 60070.0,
       "low_52w": 32140.0,
-      "change_pct": -0.084,
+      "change_pct": -0.009,
       "from_high": -11.15,
       "dates": [
         "02/17",
@@ -267,7 +267,7 @@
         54775.0,
         53790.0,
         53305.0,
-        53375.0
+        53370.0
       ],
       "ok": true
     }
@@ -759,26 +759,6 @@
       "ok": true
     },
     {
-      "symbol": "JGBS=F",
-      "name": "日本10年債先物",
-      "tag": "JP10Y",
-      "ok": false,
-      "price": null,
-      "change_pct": null,
-      "dates": [],
-      "closes": []
-    },
-    {
-      "symbol": "JGBL=F",
-      "name": "日本30年債先物",
-      "tag": "JP30Y",
-      "ok": false,
-      "price": null,
-      "change_pct": null,
-      "dates": [],
-      "closes": []
-    },
-    {
       "symbol": "JP10Y",
       "name": "日本10年債利回り",
       "tag": "JP10Y_YIELD",
@@ -856,12 +836,12 @@
       "symbol": "GC=F",
       "name": "金スポット",
       "icon": "🥇",
-      "price": 5018.6001,
-      "prev_close": 5007.3999,
+      "price": 5016.7998,
+      "prev_close": 5018.7002,
       "high_52w": 5586.2002,
       "low_52w": 2949.7,
-      "change_pct": 0.224,
-      "from_high": -10.16,
+      "change_pct": -0.038,
+      "from_high": -10.19,
       "dates": [
         "02/17",
         "02/18",
@@ -904,7 +884,7 @@
         5167.3999,
         5115.7998,
         5052.5,
-        5018.6001
+        5016.7998
       ],
       "ok": true
     },
@@ -912,12 +892,12 @@
       "symbol": "SI=F",
       "name": "銀スポット",
       "icon": "🥈",
-      "price": 80.23,
-      "prev_close": 79.59,
+      "price": 80.16,
+      "prev_close": 81.2,
       "high_52w": 121.3,
       "low_52w": 28.31,
-      "change_pct": 0.804,
-      "from_high": -33.86,
+      "change_pct": -1.281,
+      "from_high": -33.92,
       "dates": [
         "02/17",
         "02/18",
@@ -960,7 +940,7 @@
         85.065,
         84.67,
         80.914,
-        80.23
+        80.16
       ],
       "ok": true
     },
@@ -968,12 +948,12 @@
       "symbol": "PL=F",
       "name": "プラチナ",
       "icon": "💎",
-      "price": 2051.0,
-      "prev_close": 2035.8,
+      "price": 2050.1001,
+      "prev_close": 2031.6,
       "high_52w": 2852.3999,
       "low_52w": 884.5,
-      "change_pct": 0.747,
-      "from_high": -28.1,
+      "change_pct": 0.911,
+      "from_high": -28.13,
       "dates": [
         "02/17",
         "02/18",
@@ -1016,7 +996,7 @@
         2205.0,
         2160.0,
         2036.6,
-        2051.0
+        2050.1001
       ],
       "ok": true
     },
@@ -1024,12 +1004,12 @@
       "symbol": "CL=F",
       "name": "WTI原油",
       "icon": "🛢",
-      "price": 99.52,
-      "prev_close": 98.07,
+      "price": 99.54,
+      "prev_close": 98.15,
       "high_52w": 119.48,
       "low_52w": 54.98,
-      "change_pct": 1.479,
-      "from_high": -16.71,
+      "change_pct": 1.416,
+      "from_high": -16.69,
       "dates": [
         "02/17",
         "02/18",
@@ -1072,7 +1052,7 @@
         87.25,
         95.73,
         98.71,
-        99.52
+        99.54
       ],
       "ok": true
     }
@@ -1138,12 +1118,12 @@
       "symbol": "USDJPY=X",
       "name": "ドル円",
       "icon": "¥",
-      "price": 159.552,
+      "price": 159.531,
       "prev_close": 159.72,
       "high_52w": 159.631,
       "low_52w": 139.892,
-      "change_pct": -0.105,
-      "from_high": -0.05,
+      "change_pct": -0.118,
+      "from_high": -0.06,
       "dates": [
         "02/16",
         "02/17",
@@ -1188,7 +1168,7 @@
         158.114,
         159.075,
         159.206,
-        159.552
+        159.531
       ],
       "ok": true
     },
@@ -1196,11 +1176,11 @@
       "symbol": "EURJPY=X",
       "name": "ユーロ円",
       "icon": "€",
-      "price": 182.554,
+      "price": 182.557,
       "prev_close": 182.361,
       "high_52w": 186.856,
       "low_52w": 159.06,
-      "change_pct": 0.106,
+      "change_pct": 0.107,
       "from_high": -2.3,
       "dates": [
         "02/16",
@@ -1246,7 +1226,7 @@
         183.577,
         183.619,
         183.429,
-        182.554
+        182.557
       ],
       "ok": true
     },
@@ -1254,12 +1234,12 @@
       "symbol": "CHFJPY=X",
       "name": "スイスフラン円",
       "icon": "₣",
-      "price": 201.879,
+      "price": 201.935,
       "prev_close": 201.78,
       "high_52w": 203.966,
       "low_52w": 167.95,
-      "change_pct": 0.049,
-      "from_high": -1.02,
+      "change_pct": 0.077,
+      "from_high": -1.0,
       "dates": [
         "02/16",
         "02/17",
@@ -1304,7 +1284,7 @@
         203.0542,
         203.461,
         202.669,
-        201.879
+        201.935
       ],
       "ok": true
     }
@@ -1314,12 +1294,12 @@
       "symbol": "BTC-USD",
       "name": "Bitcoin",
       "icon": "₿",
-      "price": 73880.3047,
+      "price": 73828.5,
       "prev_close": 72779.0,
       "high_52w": 126198.0703,
       "low_52w": 60074.2031,
-      "change_pct": 1.513,
-      "from_high": -41.46,
+      "change_pct": 1.442,
+      "from_high": -41.5,
       "dates": [
         "02/16",
         "02/17",
@@ -1378,7 +1358,7 @@
         70493.4609,
         70968.2656,
         71214.625,
-        73880.3047
+        73828.5
       ],
       "ok": true
     },
@@ -1386,12 +1366,12 @@
       "symbol": "ETH-USD",
       "name": "Ethereum",
       "icon": "Ξ",
-      "price": 2263.3235,
+      "price": 2261.7373,
       "prev_close": 2176.6665,
       "high_52w": 4953.7329,
       "low_52w": 1386.7993,
-      "change_pct": 3.981,
-      "from_high": -54.31,
+      "change_pct": 3.908,
+      "from_high": -54.34,
       "dates": [
         "02/16",
         "02/17",
@@ -1450,7 +1430,7 @@
         2073.1362,
         2092.5635,
         2097.0867,
-        2263.3235
+        2261.7373
       ],
       "ok": true
     }
