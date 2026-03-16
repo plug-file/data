@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バフェット太郎 マーケットダッシュボード</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9e9e9;--white:#ffffff;--card:#ffffff;
+  --tx:#1a1a1a;--t2:#5c5c5c;--t3:#999999;--t4:#bcbcbc;
+  --ln:#e8e8e3;--ln2:#d5d5d0;
+  --g:#16a34a;--gbg:#ecfdf5;--gbd:#bbf7d0;
+  --r:#dc2626;--rbg:#fef2f2;--rbd:#fecaca;
+  --b:#2563eb;--bbg:#eff6ff;--bbd:#bfdbfe;
+  --y:#ca8a04;--ybg:#fefce8;--ybd:#fef08a;
+  --p:#7c3aed;--pbg:#f5f3ff;--pbd:#ddd6fe;
+  --accent:#2e7d32;
+  --mono:'IBM Plex Mono','Menlo',monospace;
+  --sans:'IBM Plex Sans','Noto Sans JP',sans-serif;
+  --card-w:156px;
+  --radius:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5}
+
+/* ── HEADER ─────────────────────────────────── */
+header{
+  background:var(--white);
+  border-bottom:1px solid var(--ln);
+  position:sticky;top:0;z-index:100;
+  padding:0 24px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:18px;font-weight:700;font-family:var(--mono);
+}
+.logo-text{display:flex;flex-direction:column;line-height:1.2}
+.logo-title{font-size:15px;font-weight:700;color:var(--tx);letter-spacing:-.02em}
+.logo-sub{font-size:10px;color:var(--t3);font-weight:500}
+.hr{display:flex;align-items:center;gap:12px}
+.live{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:10px;font-weight:600;
+  color:var(--g);background:var(--gbg);border:1px solid var(--gbd);
+  padding:4px 10px;border-radius:20px;
+}
+.ld{width:6px;height:6px;border-radius:50%;background:var(--g);animation:gl 2s infinite}
+@keyframes gl{0%,100%{opacity:1}50%{opacity:.3}}
+.upd{font-family:var(--mono);font-size:10px;color:var(--t3);background:var(--bg);border:1px solid var(--ln);padding:4px 10px;border-radius:8px}
+
+/* ── NAV TABS ───────────────────────────────── */
+.tabs{
+  background:var(--white);border-bottom:1px solid var(--ln);
+  padding:0 24px;display:flex;gap:0;overflow-x:auto;
+}
+.tab{
+  padding:12px 20px;font-size:13px;font-weight:600;color:var(--t3);
+  border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;
+  transition:color .15s,border-color .15s;
+}
+.tab:hover{color:var(--t2)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── MAIN ───────────────────────────────────── */
+main{padding:20px 24px 48px;max-width:1600px;margin:0 auto}
+
+/* ── SECTION ────────────────────────────────── */
+.section{margin-bottom:28px}
+.sl{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:12px;
+  font-size:13px;font-weight:700;color:var(--tx);
+}
+.sl-icon{
+  width:28px;height:28px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;
+}
+.sl-icon.idx{background:var(--bbg);color:var(--b)}
+.sl-icon.tech{background:var(--pbg);color:var(--p)}
+.sl-icon.rate{background:var(--gbg);color:var(--g)}
+.sl-icon.fx{background:var(--bbg);color:var(--b)}
+.sl-icon.comm{background:var(--ybg);color:var(--y)}
+.sl-icon.cry{background:var(--ybg);color:var(--y)}
+.sl-icon.mac{background:#f3f4f6;color:var(--t2)}
+.sl-line{flex:1;height:1px;background:var(--ln)}
+
+/* ── CARD GRID ──────────────────────────────── */
+.row{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(var(--card-w), 1fr));
+  gap:8px;
+}
+
+/* ── CARD ───────────────────────────────────── */
+.card{
+  background:var(--card);
+  border:1px solid var(--ln);
+  border-radius:var(--radius);
+  padding:14px 16px 10px;
+  transition:box-shadow .2s,border-color .2s,transform .15s;
+  cursor:default;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.card:hover{
+  border-color:var(--ln2);
+  box-shadow:0 4px 20px rgba(0,0,0,.06);
+  transform:translateY(-1px);
+}
+
+.csym{display:none}
+.cname{font-size:13px;font-weight:700;color:var(--tx);margin:0 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cprow{display:flex;align-items:baseline;gap:8px;flex-wrap:nowrap}
+.cprice{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--tx);white-space:nowrap}
+.cbot{display:none}
+.pct{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  padding:2px 8px;border-radius:20px;white-space:nowrap;
+}
+.pct.up {background:var(--gbg);color:var(--g);border:1px solid var(--gbd)}
+.pct.dn {background:var(--rbg);color:var(--r);border:1px solid var(--rbd)}
+.pct.neu{background:#f5f5f5;color:var(--t3);border:1px solid var(--ln)}
+.fh{font-family:var(--mono);font-size:9px;color:var(--t4);white-space:nowrap}
+
+.spark{width:100%;height:32px;margin-top:8px;border-radius:6px}
+
+/* card accent dot */
+.card .dot{
+  position:absolute;top:14px;right:14px;
+  width:8px;height:8px;border-radius:50%;opacity:.5;
+}
+.dot-b{background:var(--b)}.dot-p{background:var(--p)}
+.dot-g{background:var(--g)}.dot-y{background:var(--y)}
+.dot-r{background:var(--r)}
+
+/* ── MACRO TABLE ────────────────────────────── */
+.macro-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mt{background:var(--card);border:1px solid var(--ln);border-radius:var(--radius);overflow:hidden}
+.mh{
+  display:grid;grid-template-columns:52px 1fr 72px 100px 80px;gap:8px;
+  padding:8px 14px;background:#fafaf7;border-bottom:1px solid var(--ln);
+  font-family:var(--mono);font-size:9px;font-weight:600;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;
+}
+.mr{
+  display:grid;grid-template-columns:52px 1fr 72px 100px 80px;gap:8px;
+  align-items:center;padding:10px 14px;border-bottom:1px solid var(--ln);
+  transition:background .1s;
+}
+.mr:last-child{border-bottom:none}
+.mr:hover{background:#fafaf7}
+.mk{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--b)}
+.mn{font-size:12px;font-weight:700;color:var(--tx)}
+.mnote{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:2px}
+.mv{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--tx);text-align:right;letter-spacing:-.02em}
+.ms{font-family:var(--mono);font-size:9px;color:var(--t3);text-align:right}
+.mtr{display:flex;align-items:center;justify-content:center}
+.tp{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.tp.up {background:var(--gbg);color:var(--g);border:1px solid var(--gbd)}
+.tp.dn {background:var(--rbg);color:var(--r);border:1px solid var(--rbd)}
+.tp.neu{background:#f5f5f5;color:var(--t3);border:1px solid var(--ln)}
+
+/* shimmer */
+.sh{background:linear-gradient(90deg,#f0f0ec 25%,#e8e8e3 50%,#f0f0ec 75%);background-size:200% 100%;animation:sh 1.5s infinite;border-radius:6px;display:inline-block}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.errb{display:none;background:var(--rbg);border:1px solid var(--rbd);border-radius:10px;padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--r);margin-bottom:12px}
+.errb.show{display:block}
+
+/* stagger */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{animation:fadeUp .35s ease both}
+
+/* ── FOOTER ─────────────────────────────────── */
+footer{
+  text-align:center;padding:20px 24px 32px;
+  font-size:11px;color:var(--t4);font-family:var(--mono);
+}
+
+@media(max-width:900px){
+  :root{--card-w:140px;--radius:16px}
+  .macro-wrap{grid-template-columns:1fr}
+  .mh,.mr{grid-template-columns:44px 1fr 60px}
+  .ms,.mtr{display:none}
+  main{padding:16px 12px 32px}
+  header{padding:0 12px;height:50px}
+  .tabs{padding:0 12px}
+}
+@media(max-width:500px){
+  :root{--card-w:120px}
+  .cprice{font-size:18px}
+  .tab{padding:10px 14px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">B</div>
+    <div class="logo-text">
+      <span class="logo-title">マーケットダッシュボード</span>
+      <span class="logo-sub">buffett-taro / market-dashboard</span>
+    </div>
+  </div>
+  <div class="hr">
+    <div class="live"><div class="ld"></div>LIVE</div>
+    <div class="upd" id="upd">読み込み中…</div>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <div class="tab active" data-t="all">トップ</div>
+  <div class="tab" data-t="idx">インデックス</div>
+  <div class="tab" data-t="tech">テック / 半導体</div>
+  <div class="tab" data-t="rate">金利</div>
+  <div class="tab" data-t="fx">為替</div>
+  <div class="tab" data-t="comm">コモディティ</div>
+  <div class="tab" data-t="cry">暗号資産</div>
+  <div class="tab" data-t="mac">マクロ指標</div>
+</nav>
+
+<main>
+  <div class="errb" id="err">⚠ data.json の読み込みに失敗しました。Actions → "Update Market Data" を実行してください。</div>
+
+  <div class="section" id="sec-idx">
+    <div class="sl"><div class="sl-icon idx">📊</div>株式インデックス<div class="sl-line"></div></div>
+    <div class="row" id="idxRow">
+      <div class="card"><div class="cname">S&amp;P 500</div><div class="sh" style="width:100%;height:22px;margin:8px 0"></div></div>
+      <div class="card"><div class="cname">NASDAQ</div><div class="sh" style="width:100%;height:22px;margin:8px 0"></div></div>
+      <div class="card"><div class="cname">Dow Jones</div><div class="sh" style="width:100%;height:22px;margin:8px 0"></div></div>
+    </div>
+  </div>
+
+  <div class="section" id="sec-tech">
+    <div class="sl"><div class="sl-icon tech">💻</div>ビッグテック / 半導体<div class="sl-line"></div></div>
+    <div class="row" id="btRow"></div>
+  </div>
+
+  <div class="section" id="sec-rate">
+    <div class="sl"><div class="sl-icon rate">🏦</div>金利<div class="sl-line"></div></div>
+    <div class="row" id="rateRow"></div>
+  </div>
+
+  <div class="section" id="sec-fx">
+    <div class="sl"><div class="sl-icon fx">💱</div>為替<div class="sl-line"></div></div>
+    <div class="row" id="fxRow"></div>
+  </div>
+
+  <div class="section" id="sec-comm">
+    <div class="sl"><div class="sl-icon comm">🛢</div>コモディティ<div class="sl-line"></div></div>
+    <div class="row" id="commRow"></div>
+  </div>
+
+  <div class="section" id="sec-cry">
+    <div class="sl"><div class="sl-icon cry">₿</div>暗号資産<div class="sl-line"></div></div>
+    <div class="row" id="cryptoRow"></div>
+  </div>
+
+  <div class="section" id="sec-mac">
+    <div class="sl"><div class="sl-icon mac">📈</div>マクロ経済指標（手動更新）<div class="sl-line"></div></div>
+    <div class="macro-wrap" id="macroWrap"></div>
+  </div>
+</main>
+
+<footer>yfinance + GitHub Actions で自動取得 — マクロ指標は手動更新</footer>
+
+<script>
+/* ── MACRO (手動更新) ───────────────────────── */
+const MACRO=[
+  {key:'CPI', name:'CPI（前年比）',           val:'+2.8%', sub:'2026年2月',      trend:'dn', note:'コアCPI +3.1%'},
+  {key:'PCE', name:'PCEデフレーター',          val:'+2.8%', sub:'2026年2月',      trend:'up', note:'コアPCE +2.8%'},
+  {key:'NFP', name:'非農業部門雇用者数',       val:'+151K', sub:'2026年2月',      trend:'dn', note:'予想160K'},
+  {key:'UNE', name:'失業率',                   val:'4.1%',  sub:'2026年2月',      trend:'neu',note:'サームルール 0.27'},
+  {key:'WAGE',name:'平均時給（前年比）',        val:'+4.0%', sub:'2026年2月',      trend:'neu',note:''},
+  {key:'GDP', name:'GDP成長率（Q4改定値）',    val:'+0.7%', sub:'2025年Q4',       trend:'dn', note:'速報+1.4%から大幅下方修正'},
+  {key:'ISM', name:'ISM製造業PMI',             val:'52.4',  sub:'2026年2月',      trend:'up', note:'50以上＝拡張圏'},
+  {key:'ISMs',name:'ISM非製造業PMI',           val:'53.5',  sub:'2026年2月',      trend:'up', note:'50以上＝拡張圏'},
+  {key:'CSI', name:'消費者信頼感（ミシガン）', val:'55.5',  sub:'2026年3月',      trend:'dn', note:'長期期待インフレ 3.2%'},
+  {key:'JLT', name:'JOLTS求人件数',            val:'774万', sub:'2026年1月',      trend:'dn', note:'離職率 2.0%'},
+  {key:'ADP', name:'ADP雇用者数',              val:'+63K',  sub:'2026年2月',      trend:'up', note:'予想48K'},
+  {key:'OIL', name:'WTI原油（参考）',          val:'$98.71',sub:'2026年3月14日',  trend:'up', note:'イラン情勢で急騰'},
+];
+
+/* ── TABS ───────────────────────────────────── */
+const TAB_MAP={all:null,idx:'sec-idx',tech:'sec-tech',rate:'sec-rate',fx:'sec-fx',comm:'sec-comm',cry:'sec-cry',mac:'sec-mac'};
+document.getElementById('tabs').addEventListener('click',e=>{
+  const t=e.target.closest('.tab');if(!t)return;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  const key=t.dataset.t;
+  document.querySelectorAll('.section').forEach(s=>{
+    s.style.display=(!TAB_MAP[key]||s.id===TAB_MAP[key])?'':'none';
+  });
+});
+
+/* ── UTILS ──────────────────────────────────── */
+const fN=(v,d=2)=>{
+  if(v==null||isNaN(v))return'—';
+  if(Math.abs(v)>=10000)return v.toLocaleString('en-US',{maximumFractionDigits:0});
+  if(Math.abs(v)>=1000)return v.toLocaleString('en-US',{maximumFractionDigits:d>2?2:d});
+  return v.toFixed(d);
+};
+const fP=(v,d=2)=>v==null||isNaN(v)?'—':(v>=0?'+':'')+v.toFixed(d)+'%';
+const cc=v=>v==null||isNaN(v)?'neu':v>0?'up':v<0?'dn':'neu';
+
+/* ── SPARKLINE ──────────────────────────────── */
+function drawSpark(canvas,data,color){
+  if(!canvas||!data||data.length<2)return;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.offsetWidth,h=canvas.offsetHeight;
+  canvas.width=w*dpr;canvas.height=h*dpr;
+  ctx.scale(dpr,dpr);
+  const vals=data.filter(v=>v!=null&&!isNaN(v));
+  if(vals.length<2)return;
+  const mn=Math.min(...vals),mx=Math.max(...vals),range=mx-mn||1,pad=2;
+  ctx.beginPath();
+  let first=true;
+  for(let i=0;i<data.length;i++){
+    if(data[i]==null||isNaN(data[i]))continue;
+    const x=(i/(data.length-1))*(w-pad*2)+pad;
+    const y=h-pad-((data[i]-mn)/range)*(h-pad*2);
+    first?(ctx.moveTo(x,y),first=false):ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();
+  const lastIdx=data.length-1-[...data].reverse().findIndex(v=>v!=null&&!isNaN(v));
+  ctx.lineTo((lastIdx/(data.length-1))*(w-pad*2)+pad,h);
+  ctx.lineTo(pad,h);ctx.closePath();
+  const grd=ctx.createLinearGradient(0,0,0,h);
+  grd.addColorStop(0,color+'25');grd.addColorStop(1,color+'05');
+  ctx.fillStyle=grd;ctx.fill();
+}
+
+/* ── CARD BUILDER ───────────────────────────── */
+let sparkQ=[];
+function card(q,{dot='dot-b',d=2,u='',fh=false,delay=0}={}){
+  if(!q||!q.ok||q.price==null)
+    return `<div class="card" style="animation-delay:${delay}ms"><div class="cname">${q?.name||'—'}</div><div class="cprow"><span class="cprice" style="color:var(--r)">—</span></div></div>`;
+  const c=cc(q.change_pct);
+  const sparkColor=c==='up'?'#16a34a':c==='dn'?'#dc2626':'#999999';
+  const id='sp_'+q.symbol.replace(/[^a-zA-Z0-9]/g,'_')+'_'+Math.random().toString(36).slice(2,6);
+  const fhHtml=fh&&q.from_high!=null?`<span class="fh">高値比 ${fP(q.from_high,1)}</span>`:'';
+  if(q.closes&&q.closes.length>1)sparkQ.push({id,data:q.closes,color:sparkColor});
+  return `<div class="card" style="animation-delay:${delay}ms">
+    <div class="${dot} dot"></div>
+    <div class="cname">${q.name}</div>
+    <div class="cprow"><span class="cprice">${u}${fN(q.price,d)}</span><span class="pct ${c}">${fP(q.change_pct)}</span>${fhHtml}</div>
+    <canvas class="spark" id="${id}"></canvas>
+  </div>`;
+}
+
+/* ── MACRO TABLE ────────────────────────────── */
+function macroTable(items){
+  const tl={up:'▲ 上昇',dn:'▼ 低下',neu:'— 横ばい'};
+  const rows=items.map(m=>`
+    <div class="mr">
+      <div class="mk">${m.key}</div>
+      <div><div class="mn">${m.name}</div>${m.note?`<div class="mnote">${m.note}</div>`:''}</div>
+      <div class="mv">${m.val}</div>
+      <div class="ms">${m.sub}</div>
+      <div class="mtr"><span class="tp ${m.trend}">${tl[m.trend]}</span></div>
+    </div>`).join('');
+  return `<div class="mt">
+    <div class="mh"><div>指標</div><div>名称</div><div style="text-align:right">最新値</div><div style="text-align:right">発表日</div><div style="text-align:center">方向</div></div>
+    ${rows}
+  </div>`;
+}
+
+/* ── RENDER ──────────────────────────────────── */
+function renderAll(d){
+  sparkQ=[];
+  document.getElementById('upd').textContent=(d.updated_jst||d.updated_at||'').replace(/\s*JST\s*/g,'');
+
+  // Indices + VIX
+  const vix=d.vix;let ih='',di=0;
+  d.indices.forEach(q=>{ih+=card(q,{dot:'dot-b',d:0,delay:di*40});di++});
+  if(vix&&vix.ok&&vix.price!=null){
+    const vc=vix.price>25?'#dc2626':vix.price>18?'#ca8a04':'#16a34a';
+    const id='sp_VIX_'+Math.random().toString(36).slice(2,6);
+    if(vix.closes&&vix.closes.length>1)sparkQ.push({id,data:vix.closes,color:vc});
+    ih+=`<div class="card" style="animation-delay:${di*40}ms">
+      <div class="dot dot-r"></div>
+      <div class="cname">VIX 恐怖指数</div>
+      <div class="cprow"><span class="cprice" style="color:${vc}">${fN(vix.price,2)}</span><span class="pct ${cc(vix.change_pct)}">${fP(vix.change_pct)}</span></div>
+      <canvas class="spark" id="${id}"></canvas>
+    </div>`;
+  }
+  document.getElementById('idxRow').innerHTML=ih;
+
+  // BigTech
+  di=0;
+  document.getElementById('btRow').innerHTML=
+    d.bigtech.map(q=>card(q,{dot:'dot-p',d:2,fh:true,delay:(di++)*30})).join('');
+
+  // Rates
+  di=0;
+  const rUS10=d.rates.find(q=>q.symbol==='^TNX'),rUS30=d.rates.find(q=>q.symbol==='^TYX');
+  const rJP10=d.rates.find(q=>q.symbol==='JGBS=F');
+  let rateHtml=d.rates.map(q=>card(q,{dot:'dot-g',d:3,delay:(di++)*40})).join('');
+  // 米10Y-30Yスプレッド
+  if(rUS10?.ok&&rUS30?.ok&&rUS10.price!=null&&rUS30.price!=null){
+    const sp=(rUS30.price-rUS10.price)*10,c=sp>=0?'g':'r';
+    rateHtml+=`<div class="card" style="animation-delay:${di*40}ms">
+      <div class="dot ${sp>=0?'dot-g':'dot-r'} dot"></div>
+      <div class="cname">米30Y−10Yスプレッド</div>
+      <div class="cprow"><span class="cprice" style="color:var(--${c})">${sp>=0?'+':''}${sp.toFixed(0)}<span style="font-size:11px;margin-left:1px">bp</span></span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${sp>=0?'順イールド':'逆イールド'}</span></div>
+    </div>`;di++;
+  }
+  document.getElementById('rateRow').innerHTML=rateHtml;
+
+  // FX
+  di=0;
+  document.getElementById('fxRow').innerHTML=
+    d.fx.map(q=>card(q,{dot:'dot-b',d:3,delay:(di++)*40})).join('');
+
+  // Commodities
+  di=0;
+  document.getElementById('commRow').innerHTML=
+    d.commodities.map(q=>card(q,{dot:'dot-y',d:2,delay:(di++)*40})).join('');
+
+  // Crypto
+  di=0;
+  document.getElementById('cryptoRow').innerHTML=
+    d.crypto.map(q=>card(q,{dot:'dot-y',d:0,u:'$',fh:true,delay:(di++)*40})).join('');
+
+  // Macro
+  const half=Math.ceil(MACRO.length/2);
+  document.getElementById('macroWrap').innerHTML=
+    macroTable(MACRO.slice(0,half))+macroTable(MACRO.slice(half));
+
+  // Draw sparklines
+  requestAnimationFrame(()=>{
+    sparkQ.forEach(s=>{
+      const cvs=document.getElementById(s.id);
+      if(cvs)drawSpark(cvs,s.data,s.color);
+    });
+  });
+}
+
+/* ── LOAD ───────────────────────────────────── */
+async function load(){
+  try{
+    const r=await fetch('data.json?t='+Date.now());
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    renderAll(await r.json());
+  }catch(e){
+    console.error(e);
+    document.getElementById('err').classList.add('show');
+    document.getElementById('upd').textContent='データなし';
+    const half=Math.ceil(MACRO.length/2);
+    document.getElementById('macroWrap').innerHTML=
+      macroTable(MACRO.slice(0,half))+macroTable(MACRO.slice(half));
+  }
+}
+
+/* ── RESIZE SPARKLINES ──────────────────────── */
+let rt;
+window.addEventListener('resize',()=>{
+  clearTimeout(rt);
+  rt=setTimeout(()=>{sparkQ.forEach(s=>{const c=document.getElementById(s.id);if(c)drawSpark(c,s.data,s.color)})},200);
+});
+
+load();
+</script>
+</body>
+</html>
