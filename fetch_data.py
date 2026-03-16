@@ -33,8 +33,6 @@ SYMBOLS = {
     "rates": [
         {"symbol": "^TNX", "name": "米10年債利回り", "tag": "US10Y"},
         {"symbol": "^TYX", "name": "米30年債利回り", "tag": "US30Y"},
-        {"symbol": "JGBS=F", "name": "日本10年債先物",   "tag": "JP10Y"},
-        {"symbol": "JGBL=F", "name": "日本30年債先物",   "tag": "JP30Y"},
     ],
     "commodities": [
         {"symbol": "GC=F", "name": "金スポット",     "icon": "🥇"},
