@@ -1,13 +1,16 @@
 """
 バフェット太郎 マーケットダッシュボード — データ取得スクリプト
 yfinance でデータを取得し、docs/data.json に保存する。
+Twelvedata API で日本国債利回り（JP10Y / JP30Y）を補完取得する。
 GitHub Actions から毎日自動実行される。
 """
 
 import json
+import os
 import sys
 from datetime import datetime, timezone
 import yfinance as yf
+import requests
 
 # ── 取得対象シンボル ────────────────────────────────────────────
 SYMBOLS = {
@@ -127,6 +130,86 @@ def fetch_group(group_key: str) -> list:
     return results
 
 
+def fetch_twelvedata_bond(symbol: str, name: str, tag: str) -> dict:
+    """Twelvedata API で日本国債利回りを取得する"""
+    api_key = os.environ.get("TWELVEDATA_API_KEY", "")
+    meta = {"symbol": symbol, "name": name, "tag": tag}
+    if not api_key:
+        print(f"  ⚠ TWELVEDATA_API_KEY が未設定: {symbol}", file=sys.stderr)
+        return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+
+    try:
+        # 直近1ヶ月の日足データを取得
+        url = "https://api.twelvedata.com/time_series"
+        params = {
+            "symbol": symbol,
+            "interval": "1day",
+            "outputsize": 30,
+            "apikey": api_key,
+        }
+        print(f"  Fetching {symbol} from Twelvedata ...")
+        r = requests.get(url, params=params, timeout=15)
+        r.raise_for_status()
+        data = r.json()
+
+        if data.get("status") == "error":
+            print(f"  ⚠ Twelvedata error for {symbol}: {data.get('message','')}", file=sys.stderr)
+            return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+
+        values = data.get("values", [])
+        if not values:
+            return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+
+        # values は新しい順 → 古い順に反転
+        values = list(reversed(values))
+
+        closes = []
+        dates = []
+        for v in values:
+            c = float(v["close"])
+            closes.append(round(c, 4))
+            # "2026-03-14" → "03/14"
+            dt = v["datetime"]
+            dates.append(dt[5:7] + "/" + dt[8:10])
+
+        price = closes[-1]
+        prev_close = closes[-2] if len(closes) >= 2 else None
+
+        change_pct = None
+        if price is not None and prev_close is not None and prev_close != 0:
+            change_pct = round((price - prev_close) / abs(prev_close) * 100, 3)
+
+        high_val = max(closes) if closes else None
+        low_val = min(closes) if closes else None
+        from_high = None
+        if price and high_val and high_val != 0:
+            from_high = round((price - high_val) / high_val * 100, 2)
+
+        return {
+            **meta,
+            "price": round(price, 4),
+            "prev_close": round(prev_close, 4) if prev_close else None,
+            "high_52w": high_val,
+            "low_52w": low_val,
+            "change_pct": change_pct,
+            "from_high": from_high,
+            "dates": dates,
+            "closes": closes,
+            "ok": True,
+        }
+
+    except Exception as e:
+        print(f"  ⚠ Twelvedata {symbol}: {e}", file=sys.stderr)
+        return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
+
+
+# Twelvedata で取得する日本国債利回り
+TWELVEDATA_BONDS = [
+    {"symbol": "JP10Y", "name": "日本10年債利回り", "tag": "JP10Y_YIELD"},
+    {"symbol": "JP30Y", "name": "日本30年債利回り", "tag": "JP30Y_YIELD"},
+]
+
+
 def main():
     print("=== データ取得開始 ===")
     output = {
@@ -141,6 +224,14 @@ def main():
         results = fetch_group(group_key)
         # vix は単体なのでリストの最初の要素を直接入れる
         output[group_key] = results[0] if group_key == "vix" else results
+
+    # Twelvedata: 日本国債利回り → rates に追加
+    print("\n[twelvedata_bonds]")
+    for bond in TWELVEDATA_BONDS:
+        result = fetch_twelvedata_bond(bond["symbol"], bond["name"], bond["tag"])
+        output["rates"].append(result)
+        status = "✓" if result["ok"] else "✗"
+        print(f"  {status} {bond['symbol']}: {result.get('price')}")
 
     # docs/data.json に保存
     out_path = "docs/data.json"
