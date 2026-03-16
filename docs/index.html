@@ -267,7 +267,7 @@ footer{
   </div>
 </main>
 
-<footer>yfinance + GitHub Actions で自動取得 — マクロ指標は手動更新</footer>
+<footer>yfinance + Twelvedata + GitHub Actions で自動取得 — マクロ指標は手動更新</footer>
 
 <script>
 /* ── MACRO (手動更新) ───────────────────────── */
@@ -401,14 +401,29 @@ function renderAll(d){
   di=0;
   const rUS10=d.rates.find(q=>q.symbol==='^TNX'),rUS30=d.rates.find(q=>q.symbol==='^TYX');
   const rJP10=d.rates.find(q=>q.symbol==='JGBS=F');
-  let rateHtml=d.rates.map(q=>card(q,{dot:'dot-g',d:3,delay:(di++)*40})).join('');
-  // 米10Y-30Yスプレッド
+  const rJP10Y=d.rates.find(q=>q.tag==='JP10Y_YIELD');
+  const rJP30Y=d.rates.find(q=>q.tag==='JP30Y_YIELD');
+  let rateHtml=d.rates.filter(q=>q.tag!=='JP10Y_YIELD'&&q.tag!=='JP30Y_YIELD').map(q=>card(q,{dot:'dot-g',d:3,delay:(di++)*40})).join('');
+  // 米30Y-10Yスプレッド
   if(rUS10?.ok&&rUS30?.ok&&rUS10.price!=null&&rUS30.price!=null){
     const sp=(rUS30.price-rUS10.price)*10,c=sp>=0?'g':'r';
     rateHtml+=`<div class="card" style="animation-delay:${di*40}ms">
       <div class="dot ${sp>=0?'dot-g':'dot-r'} dot"></div>
       <div class="cname">米30Y−10Yスプレッド</div>
       <div class="cprow"><span class="cprice" style="color:var(--${c})">${sp>=0?'+':''}${sp.toFixed(0)}<span style="font-size:11px;margin-left:1px">bp</span></span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${sp>=0?'順イールド':'逆イールド'}</span></div>
+    </div>`;di++;
+  }
+  // 日本10年債利回り（Twelvedata）
+  if(rJP10Y)rateHtml+=card(rJP10Y,{dot:'dot-g',d:3,delay:(di++)*40});
+  // 日本30年債利回り（Twelvedata）
+  if(rJP30Y)rateHtml+=card(rJP30Y,{dot:'dot-g',d:3,delay:(di++)*40});
+  // 日本30Y-10Yスプレッド
+  if(rJP10Y?.ok&&rJP30Y?.ok&&rJP10Y.price!=null&&rJP30Y.price!=null){
+    const spJ=Math.round((rJP30Y.price-rJP10Y.price)*100),cJ=spJ>=0?'g':'r';
+    rateHtml+=`<div class="card" style="animation-delay:${di*40}ms">
+      <div class="dot ${spJ>=0?'dot-g':'dot-r'} dot"></div>
+      <div class="cname">日本30Y−10Yスプレッド</div>
+      <div class="cprow"><span class="cprice" style="color:var(--${cJ})">${spJ>=0?'+':''}${spJ}<span style="font-size:11px;margin-left:1px">bp</span></span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${spJ>=0?'順イールド':'逆イールド'}</span></div>
     </div>`;di++;
   }
   document.getElementById('rateRow').innerHTML=rateHtml;
