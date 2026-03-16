@@ -400,7 +400,6 @@ function renderAll(d){
   // Rates
   di=0;
   const rUS10=d.rates.find(q=>q.symbol==='^TNX'),rUS30=d.rates.find(q=>q.symbol==='^TYX');
-  const rJP10=d.rates.find(q=>q.symbol==='JGBS=F');
   let rateHtml=d.rates.map(q=>card(q,{dot:'dot-g',d:3,delay:(di++)*40})).join('');
   // 米10Y-30Yスプレッド
   if(rUS10?.ok&&rUS30?.ok&&rUS10.price!=null&&rUS30.price!=null){
@@ -409,6 +408,15 @@ function renderAll(d){
       <div class="dot ${sp>=0?'dot-g':'dot-r'} dot"></div>
       <div class="cname">米30Y−10Yスプレッド</div>
       <div class="cprow"><span class="cprice" style="color:var(--${c})">${sp>=0?'+':''}${sp.toFixed(0)}<span style="font-size:11px;margin-left:1px">bp</span></span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${sp>=0?'順イールド':'逆イールド'}</span></div>
+    </div>`;di++;
+  }
+  // 日米10Yスプレッド（米^TNX と Twelve Data JP10Y は同単位の利回り%）
+  if(rUS10?.ok&&rJP10?.ok&&rUS10.price!=null&&rJP10.price!=null){
+    const sp=(rUS10.price-rJP10.price)*10;
+    rateHtml+=`<div class="card" style="animation-delay:${di*40}ms">
+      <div class="dot dot-b dot"></div>
+      <div class="cname">日米10Yスプレッド</div>
+      <div class="cprow"><span class="cprice">${sp>=0?'+':''}${sp.toFixed(0)}<span style="font-size:11px;margin-left:1px">bp</span></span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${sp>=0?'ドル優位':'円優位'}</span></div>
     </div>`;di++;
   }
   document.getElementById('rateRow').innerHTML=rateHtml;

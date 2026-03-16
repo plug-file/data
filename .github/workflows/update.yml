@@ -28,6 +28,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Fetch market data
+        env:
+          TWELVEDATA_API_KEY: ${{ secrets.TWELVEDATA_API_KEY }}
         run: python fetch_data.py
 
       - name: Commit and push data.json

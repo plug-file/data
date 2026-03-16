@@ -5,7 +5,9 @@ GitHub Actions から毎日自動実行される。
 """
 
 import json
+import os
 import sys
+import requests
 from datetime import datetime, timezone
 import yfinance as yf
 
@@ -30,8 +32,7 @@ SYMBOLS = {
     "rates": [
         {"symbol": "^TNX", "name": "米10年債利回り", "tag": "US10Y"},
         {"symbol": "^TYX", "name": "米30年債利回り", "tag": "US30Y"},
-        {"symbol": "JGBS=F", "name": "日本10年債先物",   "tag": "JP10Y"},
-        {"symbol": "JGBL=F", "name": "日本30年債先物",   "tag": "JP30Y"},
+        # 日本国債は fetch_twelvedata_bonds() で追加
     ],
     "commodities": [
         {"symbol": "GC=F", "name": "金スポット",     "icon": "🥇"},
@@ -54,8 +55,75 @@ SYMBOLS = {
     ],
 }
 
-HISTORY_PERIOD = "1mo"
+HISTORY_PERIOD   = "1mo"
 HISTORY_INTERVAL = "1d"
+
+TWELVEDATA_BONDS = [
+    {"symbol": "JP10Y", "name": "日本10年債利回り", "tag": "JP10Y"},
+    {"symbol": "JP30Y", "name": "日本30年債利回り", "tag": "JP30Y"},
+]
+
+
+def fetch_twelvedata_bonds() -> list:
+    """Twelve Data API から JP10Y・JP30Y 利回りを取得する。"""
+    api_key = os.environ.get("TWELVEDATA_API_KEY", "")
+    if not api_key:
+        print("  ⚠ TWELVEDATA_API_KEY が未設定です", file=sys.stderr)
+        return [{**m, "ok": False, "price": None, "change_pct": None,
+                 "dates": [], "closes": []} for m in TWELVEDATA_BONDS]
+
+    results = []
+    for meta in TWELVEDATA_BONDS:
+        try:
+            r = requests.get(
+                "https://api.twelvedata.com/time_series",
+                params={
+                    "symbol":     meta["symbol"],
+                    "interval":   "1day",
+                    "outputsize": 30,
+                    "apikey":     api_key,
+                },
+                timeout=15,
+            )
+            r.raise_for_status()
+            data = r.json()
+
+            if data.get("status") != "ok" or "values" not in data:
+                raise ValueError(data.get("message", "API error"))
+
+            # values は新しい順 → 古い順に並べ直す
+            values    = list(reversed(data["values"]))
+            closes    = [float(v["close"]) for v in values]
+            dates_fmt = [v["datetime"][5:].replace("-", "/") for v in values]
+
+            price      = closes[-1]
+            prev_close = closes[-2] if len(closes) >= 2 else None
+            change_pct = (round((price - prev_close) / abs(prev_close) * 100, 3)
+                          if prev_close else None)
+            high_52w   = round(max(closes), 3)
+            low_52w    = round(min(closes), 3)
+            from_high  = round((price - high_52w) / high_52w * 100, 2)
+
+            results.append({
+                **meta,
+                "price":      round(price, 3),
+                "prev_close": round(prev_close, 3) if prev_close else None,
+                "high_52w":   high_52w,
+                "low_52w":    low_52w,
+                "change_pct": change_pct,
+                "from_high":  from_high,
+                "dates":      dates_fmt,
+                "closes":     closes,
+                "ok":         True,
+            })
+            print(f"    {meta['symbol']}: {price}")
+
+        except Exception as e:
+            print(f"  ⚠ {meta['symbol']}: {e}", file=sys.stderr)
+            results.append({**meta, "ok": False, "price": None, "change_pct": None,
+                            "dates": [], "closes": []})
+
+    return results
 
 
 def fetch_quote(ticker_obj, meta: dict) -> dict:
