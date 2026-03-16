@@ -400,10 +400,21 @@ function renderAll(d){
   // Rates
   di=0;
   const rUS10=d.rates.find(q=>q.symbol==='^TNX'),rUS30=d.rates.find(q=>q.symbol==='^TYX');
+  const rUS3M=d.rates.find(q=>q.tag==='US3M');
+  const rUS2Y=d.rates.find(q=>q.tag==='US2Y');
+  const rFF=d.rates.find(q=>q.tag==='FEDFUNDS');
   const rJP10=d.rates.find(q=>q.symbol==='JGBS=F');
+  const rJP2Y=d.rates.find(q=>q.tag==='JP2Y_YIELD');
   const rJP10Y=d.rates.find(q=>q.tag==='JP10Y_YIELD');
   const rJP30Y=d.rates.find(q=>q.tag==='JP30Y_YIELD');
-  let rateHtml=d.rates.filter(q=>q.tag!=='JP10Y_YIELD'&&q.tag!=='JP30Y_YIELD').map(q=>card(q,{dot:'dot-g',d:3,delay:(di++)*40})).join('');
+  const rPE=d.sp500_pe;
+  // yfinance取得分（3M, 5Y, 10Y, 30Y）＋手動除外タグを除く
+  const excludeTags=new Set(['US2Y','JP2Y_YIELD','JP10Y_YIELD','JP30Y_YIELD','FEDFUNDS']);
+  let rateHtml=d.rates.filter(q=>!excludeTags.has(q.tag)).map(q=>card(q,{dot:'dot-g',d:3,delay:(di++)*40})).join('');
+  // 米2年債（FRED）
+  if(rUS2Y)rateHtml+=card(rUS2Y,{dot:'dot-g',d:3,delay:(di++)*40});
+  // FFレート（FRED）
+  if(rFF)rateHtml+=card(rFF,{dot:'dot-g',d:2,delay:(di++)*40});
   // 米30Y-10Yスプレッド
   if(rUS10?.ok&&rUS30?.ok&&rUS10.price!=null&&rUS30.price!=null){
     const sp=(rUS30.price-rUS10.price)*10,c=sp>=0?'g':'r';
@@ -413,11 +424,22 @@ function renderAll(d){
       <div class="cprow"><span class="cprice" style="color:var(--${c})">${sp>=0?'+':''}${sp.toFixed(0)}<span style="font-size:11px;margin-left:1px">bp</span></span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${sp>=0?'順イールド':'逆イールド'}</span></div>
     </div>`;di++;
   }
-  // 日本10年債利回り（Twelvedata）
+  // 日本2年債（財務省CSV）
+  if(rJP2Y)rateHtml+=card(rJP2Y,{dot:'dot-g',d:3,delay:(di++)*40});
+  // 日本10年債（財務省CSV）
   if(rJP10Y)rateHtml+=card(rJP10Y,{dot:'dot-g',d:3,delay:(di++)*40});
-  // 日本30年債利回り（Twelvedata）
+  // 日本30年債（財務省CSV）
   if(rJP30Y)rateHtml+=card(rJP30Y,{dot:'dot-g',d:3,delay:(di++)*40});
-  // 日本30Y-10Yスプレッド
+  // 日本スプレッド（10Y-2Y）
+  if(rJP2Y?.ok&&rJP10Y?.ok&&rJP2Y.price!=null&&rJP10Y.price!=null){
+    const spJ2=Math.round((rJP10Y.price-rJP2Y.price)*100),cJ2=spJ2>=0?'g':'r';
+    rateHtml+=`<div class="card" style="animation-delay:${di*40}ms">
+      <div class="dot ${spJ2>=0?'dot-g':'dot-r'} dot"></div>
+      <div class="cname">日本10Y−2Yスプレッド</div>
+      <div class="cprow"><span class="cprice" style="color:var(--${cJ2})">${spJ2>=0?'+':''}${spJ2}<span style="font-size:11px;margin-left:1px">bp</span></span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${spJ2>=0?'順イールド':'逆イールド'}</span></div>
+    </div>`;di++;
+  }
+  // 日本スプレッド（30Y-10Y）
   if(rJP10Y?.ok&&rJP30Y?.ok&&rJP10Y.price!=null&&rJP30Y.price!=null){
     const spJ=Math.round((rJP30Y.price-rJP10Y.price)*100),cJ=spJ>=0?'g':'r';
     rateHtml+=`<div class="card" style="animation-delay:${di*40}ms">
@@ -425,6 +447,10 @@ function renderAll(d){
       <div class="cname">日本30Y−10Yスプレッド</div>
       <div class="cprow"><span class="cprice" style="color:var(--${cJ})">${spJ>=0?'+':''}${spJ}<span style="font-size:11px;margin-left:1px">bp</span></span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${spJ>=0?'順イールド':'逆イールド'}</span></div>
     </div>`;di++;
+  }
+  // S&P500 PER
+  if(rPE&&rPE.ok&&rPE.price!=null){
+    rateHtml+=card(rPE,{dot:'dot-b',d:1,delay:(di++)*40});
   }
   document.getElementById('rateRow').innerHTML=rateHtml;
 
