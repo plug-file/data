@@ -208,7 +208,14 @@ def main():
         print(f"\n[{group_key}]")
         results = fetch_group(group_key)
         # vix は単体なのでリストの最初の要素を直接入れる
-        output[group_key] = results[0] if group_key == "vix" else results
+        if group_key == "vix":
+            output[group_key] = results[0]
+        elif group_key == "rates":
+            print("
+[twelvedata_bonds]")
+            output[group_key] = results + fetch_twelvedata_bonds()
+        else:
+            output[group_key] = results
 
     # docs/data.json に保存
     out_path = "docs/data.json"

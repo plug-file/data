@@ -411,6 +411,7 @@ function renderAll(d){
     </div>`;di++;
   }
   // 日米10Yスプレッド（米^TNX と Twelve Data JP10Y は同単位の利回り%）
+  const rJP10=d.rates.find(q=>q.symbol==='JP10Y');
   if(rUS10?.ok&&rJP10?.ok&&rUS10.price!=null&&rJP10.price!=null){
     const sp=(rUS10.price-rJP10.price)*10;
     rateHtml+=`<div class="card" style="animation-delay:${di*40}ms">
