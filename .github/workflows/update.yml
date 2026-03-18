@@ -1,9 +1,9 @@
 name: Update Market Data
 
 on:
-  schedule:
-    # 毎日 月〜金 22:00 UTC（日本時間 翌朝7時・市場クローズ後）
-    - cron: "0 22 * * 1-6"
+  # schedule:
+  #   # 毎日 月〜金 22:00 UTC（日本時間 翌朝7時・市場クローズ後）
+  #   - cron: "0 22 * * 1-6"
   workflow_dispatch:  # 手動実行ボタンも有効
 
 jobs:
