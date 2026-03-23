@@ -340,8 +340,8 @@ function analyze(d) {
   else if (d.cpi >= 3.5) { score -= 1; reasons.push("インフレが高止まりで利下げが遠のく"); }
 
   // 5. ISMサービス業
-  if (d.ismSvc < 50) { score -= 1; reasons.push("ISMサービス業PMIが50割れ — 景気後退リスク"); }
-  else if (d.ismSvc > 55) { score += 1; reasons.push("ISMサービス業PMIが55超 — 景気は堅調"); }
+  if (d.ismSvc < 50) { score -= 1; reasons.push("サービス業PMI（S&Pグローバル）が50割れ — 景気後退リスク"); }
+  else if (d.ismSvc > 55) { score += 1; reasons.push("サービス業PMI（S&Pグローバル）が55超 — 景気は堅調"); }
 
   // 6. 大統領サイクル（2025年 = 共和党トランプ任期1年目）
   const year = new Date().getFullYear();
@@ -462,7 +462,7 @@ function render(json) {
       <div class="data-source-title" style="color:#22c55e">✓ 全指標自動取得中（FRED API連携済み）</div>
       <div class="data-source-text">
         市場データ（yfinance）+ マクロ経済指標（FRED API）の両方を <strong>data.json</strong> から自動読み込みしています。<br>
-        GitHub Actionsで毎日自動更新されます。ISMサービス業PMIのみFREDで取得できない場合があります。
+        GitHub Actionsで毎日自動更新されます。サービス業PMI（S&Pグローバル）のみFREDで取得できない場合があります。
       </div>
     </div>`;
   } else {
@@ -553,7 +553,7 @@ function render(json) {
       { from:3.5, to:6, label:"インフレ警戒", color:"#ef4444" },
     ]);
 
-  s2 += renderGauge("ISM製造業PMI", d.ismMfg,
+  s2 += renderGauge("製造業PMI（S&Pグローバル）", d.ismMfg,
     "50が好不況の分かれ目。50を下回ると製造業は不況",
     40, 65, [
       { from:40, to:47, label:"深刻な不況", color:"#ef4444" },
@@ -562,7 +562,7 @@ function render(json) {
       { from:55, to:65, label:"力強い拡大", color:"#22c55e" },
     ]);
 
-  s2 += renderGauge("ISMサービス業PMI", d.ismSvc,
+  s2 += renderGauge("サービス業PMI（S&Pグローバル）", d.ismSvc,
     "米GDPの約7割がサービス業。50を下回ると景気後退の可能性大",
     40, 65, [
       { from:40, to:47, label:"深刻な不況", color:"#ef4444" },
@@ -602,8 +602,9 @@ function render(json) {
       { tag:"UNRATE",   label:"失業率" },
       { tag:"NFP",      label:"雇用者数（前月差）" },
       { tag:"WAGE",     label:"平均時給（前年比）" },
-      { tag:"ISM_MFG",  label:"ISM製造業PMI" },
-      { tag:"ISM_SVC",  label:"ISMサービス業PMI" },
+      { tag:"GDP",      label:"GDP成長率（実質・年率）" },
+      { tag:"ISM_MFG",  label:"製造業PMI（S&Pグローバル）" },
+      { tag:"ISM_SVC",  label:"サービス業PMI（S&Pグローバル）" },
       { tag:"UMCSENT",  label:"ミシガン消費者信頼感" },
       { tag:"JOLTS",    label:"JOLTS求人件数" },
     ];

@@ -280,39 +280,50 @@ const MACRO=[
   {key:'CPI', name:'CPI（前年比）',           val:'+2.8%', sub:'2026年2月',      trend:'dn', note:'コアCPI +3.1%',  fredTag:'CPI'},
   {key:'PCE', name:'PCEデフレーター',          val:'+2.8%', sub:'2026年2月',      trend:'up', note:'コアPCE +2.8%',  fredTag:'PCE'},
   {key:'NFP', name:'非農業部門雇用者数',       val:'+151K', sub:'2026年2月',      trend:'dn', note:'予想160K',       fredTag:'NFP'},
-  {key:'UNE', name:'失業率',                   val:'4.1%',  sub:'2026年2月',      trend:'neu',note:'サームルール 0.27',fredTag:'UNRATE'},
+  {key:'UNE', name:'失業率',                   val:'4.1%',  sub:'2026年2月',      trend:'neu',note:'',               fredTag:'UNRATE'},
   {key:'WAGE',name:'平均時給（前年比）',        val:'+4.0%', sub:'2026年2月',      trend:'neu',note:'',               fredTag:'WAGE'},
-  {key:'GDP', name:'GDP成長率（Q4改定値）',    val:'+0.7%', sub:'2025年Q4',       trend:'dn', note:'速報+1.4%から大幅下方修正'},
-  {key:'ISM', name:'ISM製造業PMI',             val:'52.4',  sub:'2026年2月',      trend:'up', note:'50以上＝拡張圏', fredTag:'ISM_MFG'},
-  {key:'ISMs',name:'ISM非製造業PMI',           val:'53.5',  sub:'2026年2月',      trend:'up', note:'50以上＝拡張圏', fredTag:'ISM_SVC'},
-  {key:'CSI', name:'消費者信頼感（ミシガン）', val:'55.5',  sub:'2026年3月',      trend:'dn', note:'長期期待インフレ 3.2%',fredTag:'UMCSENT'},
-  {key:'JLT', name:'JOLTS求人件数',            val:'774万', sub:'2026年1月',      trend:'dn', note:'離職率 2.0%',    fredTag:'JOLTS'},
+  {key:'GDP', name:'GDP成長率（実質・年率）',  val:'+0.7%', sub:'2025年Q4',       trend:'dn', note:'四半期',         fredTag:'GDP'},
+  {key:'ISM', name:'製造業PMI（S&Pグローバル）',val:'52.4', sub:'2026年2月',      trend:'up', note:'50以上＝拡張圏', fredTag:'ISM_MFG'},
+  {key:'ISMs',name:'サービス業PMI（S&Pグローバル）',val:'53.5',sub:'2026年2月',   trend:'up', note:'50以上＝拡張圏', fredTag:'ISM_SVC'},
+  {key:'CSI', name:'消費者信頼感（ミシガン）', val:'55.5',  sub:'2026年3月',      trend:'dn', note:'',               fredTag:'UMCSENT'},
+  {key:'JLT', name:'JOLTS求人件数',            val:'774万', sub:'2026年1月',      trend:'dn', note:'千件',           fredTag:'JOLTS'},
   {key:'ADP', name:'ADP雇用者数',              val:'+63K',  sub:'2026年2月',      trend:'up', note:'予想48K'},
-  {key:'OIL', name:'WTI原油（参考）',          val:'$98.71',sub:'2026年3月14日',  trend:'up', note:'イラン情勢で急騰'},
+  {key:'OIL', name:'WTI原油',                  val:'$98.71',sub:'',               trend:'neu',note:'',               _fromCommodity:'CL=F'},
 ];
 
 // data.jsonのmacroフィールドがあればMACRO配列を自動上書きする関数
-function updateMacroFromJson(macroData) {
+function updateMacroFromJson(macroData, fullData) {
   if (!macroData || typeof macroData !== 'object') return;
   MACRO.forEach(item => {
-    if (!item.fredTag) return;
-    const fred = macroData[item.fredTag];
-    if (!fred || !fred.ok) return;
-    // 自動取得フラグ
-    item._auto = true;
-    // 値を上書き
-    if (fred.display) item.val = fred.display;
-    if (fred.date) {
-      // "2026-02" → "2026年2月" に変換
-      const parts = fred.date.split('-');
-      if (parts.length === 2) {
-        item.sub = `${parts[0]}年${parseInt(parts[1])}月`;
-      } else {
-        item.sub = fred.date;
+    // FRED APIからの自動取得
+    if (item.fredTag) {
+      const fred = macroData[item.fredTag];
+      if (!fred || !fred.ok) return;
+      item._auto = true;
+      if (fred.display) item.val = fred.display;
+      if (fred.date) {
+        const parts = fred.date.split('-');
+        if (parts.length === 2) {
+          item.sub = `${parts[0]}年${parseInt(parts[1])}月`;
+        } else {
+          item.sub = fred.date;
+        }
+      }
+      if (fred.trend) item.trend = fred.trend;
+      if (fred.note) item.note = fred.note;
+      return;
+    }
+    // コモディティデータからの自動取得（WTI原油など）
+    if (item._fromCommodity && fullData && fullData.commodities) {
+      const comm = fullData.commodities.find(c => c.symbol === item._fromCommodity);
+      if (comm && comm.ok && comm.price != null) {
+        item._auto = true;
+        item.val = '$' + comm.price.toLocaleString('en-US', {maximumFractionDigits:2});
+        item.sub = fullData.updated_jst ? fullData.updated_jst.replace(/\s*JST\s*/g,'').slice(0,11) : '';
+        item.trend = comm.change_pct > 0 ? 'up' : comm.change_pct < 0 ? 'dn' : 'neu';
+        item.note = comm.change_pct != null ? (comm.change_pct >= 0 ? '+' : '') + comm.change_pct.toFixed(2) + '%' : '';
       }
     }
-    if (fred.trend) item.trend = fred.trend;
-    if (fred.note) item.note = fred.note;
   });
 }
 
@@ -412,7 +423,7 @@ function renderAll(d){
   document.getElementById('upd').textContent=(d.updated_jst||d.updated_at||'').replace(/\s*JST\s*/g,'');
 
   // data.jsonにmacroフィールドがあれば、MACRO配列を自動上書き
-  if(d.macro) updateMacroFromJson(d.macro);
+  if(d.macro) updateMacroFromJson(d.macro, d);
 
   // Indices + VIX
   const vix=d.vix;let ih='',di=0;
