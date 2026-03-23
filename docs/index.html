@@ -263,12 +263,16 @@ footer{
   </div>
 
   <div class="section" id="sec-mac">
-    <div class="sl"><div class="sl-icon mac">📈</div>マクロ経済指標（手動更新）<div class="sl-line"></div></div>
-    <div class="macro-wrap" id="macroWrap"></div>
+    <div class="sl"><div class="sl-icon mac">📈</div>マクロ経済指標（FRED API 自動取得）<div class="sl-line"></div></div>
+    <div class="macro-wrap" id="macroAutoWrap"></div>
+    <div style="margin-top:16px">
+      <div class="sl"><div class="sl-icon mac" style="background:#ca8a04">✏️</div>マクロ経済指標（手動更新）<div class="sl-line"></div></div>
+      <div class="macro-wrap" id="macroManualWrap"></div>
+    </div>
   </div>
 </main>
 
-<footer>yfinance + 財務省国債金利情報 + GitHub Actions で自動取得 — マクロ指標は手動更新</footer>
+<footer>yfinance + FRED API + 財務省国債金利情報 + GitHub Actions で自動取得</footer>
 
 <script>
 /* ── MACRO (手動更新 → data.json のmacroがあれば自動上書き) ── */
@@ -294,6 +298,8 @@ function updateMacroFromJson(macroData) {
     if (!item.fredTag) return;
     const fred = macroData[item.fredTag];
     if (!fred || !fred.ok) return;
+    // 自動取得フラグ
+    item._auto = true;
     // 値を上書き
     if (fred.display) item.val = fred.display;
     if (fred.date) {
@@ -381,14 +387,19 @@ function card(q,{dot='dot-b',d=2,u='',fh=false,delay=0}={}){
 /* ── MACRO TABLE ────────────────────────────── */
 function macroTable(items){
   const tl={up:'▲ 上昇',dn:'▼ 低下',neu:'— 横ばい'};
-  const rows=items.map(m=>`
+  const rows=items.map(m=>{
+    const badge=m._auto
+      ?'<span style="font-size:8px;font-weight:700;color:#16a34a;background:#dcfce7;border:1px solid #bbf7d0;padding:1px 5px;border-radius:10px;margin-left:4px">AUTO</span>'
+      :'<span style="font-size:8px;font-weight:700;color:#ca8a04;background:#fefce8;border:1px solid #fef08a;padding:1px 5px;border-radius:10px;margin-left:4px">手動</span>';
+    return `
     <div class="mr">
       <div class="mk">${m.key}</div>
-      <div><div class="mn">${m.name}</div>${m.note?`<div class="mnote">${m.note}</div>`:''}</div>
+      <div><div class="mn">${m.name}${badge}</div>${m.note?`<div class="mnote">${m.note}</div>`:''}</div>
       <div class="mv">${m.val}</div>
       <div class="ms">${m.sub}</div>
       <div class="mtr"><span class="tp ${m.trend}">${tl[m.trend]}</span></div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   return `<div class="mt">
     <div class="mh"><div>指標</div><div>名称</div><div style="text-align:right">最新値</div><div style="text-align:right">発表日</div><div style="text-align:center">方向</div></div>
     ${rows}
@@ -496,10 +507,25 @@ function renderAll(d){
   document.getElementById('cryptoRow').innerHTML=
     d.crypto.map(q=>card(q,{dot:'dot-y',d:0,u:'$',fh:true,delay:(di++)*40})).join('');
 
-  // Macro
-  const half=Math.ceil(MACRO.length/2);
-  document.getElementById('macroWrap').innerHTML=
-    macroTable(MACRO.slice(0,half))+macroTable(MACRO.slice(half));
+  // Macro — 自動取得と手動更新を分離して表示
+  const macroAuto = MACRO.filter(m => m._auto);
+  const macroManual = MACRO.filter(m => !m._auto);
+
+  if (macroAuto.length > 0) {
+    const halfA = Math.ceil(macroAuto.length / 2);
+    document.getElementById('macroAutoWrap').innerHTML =
+      macroTable(macroAuto.slice(0, halfA)) + macroTable(macroAuto.slice(halfA));
+  } else {
+    document.getElementById('macroAutoWrap').innerHTML =
+      '<div style="padding:12px;color:#999;font-size:12px">FRED APIキー未設定のため自動取得データはありません</div>';
+  }
+
+  if (macroManual.length > 0) {
+    document.getElementById('macroManualWrap').innerHTML = macroTable(macroManual);
+  } else {
+    document.getElementById('macroManualWrap').innerHTML =
+      '<div style="padding:12px;color:#16a34a;font-size:12px">✓ すべての指標がFRED APIで自動取得されています</div>';
+  }
 
   // Draw sparklines
   requestAnimationFrame(()=>{
@@ -520,9 +546,10 @@ async function load(){
     console.error(e);
     document.getElementById('err').classList.add('show');
     document.getElementById('upd').textContent='データなし';
-    const half=Math.ceil(MACRO.length/2);
-    document.getElementById('macroWrap').innerHTML=
-      macroTable(MACRO.slice(0,half))+macroTable(MACRO.slice(half));
+    const halfE=Math.ceil(MACRO.length/2);
+    document.getElementById('macroAutoWrap').innerHTML=
+      macroTable(MACRO.slice(0,halfE))+macroTable(MACRO.slice(halfE));
+    document.getElementById('macroManualWrap').innerHTML='';
   }
 }
 
