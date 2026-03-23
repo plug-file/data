@@ -428,8 +428,11 @@ FRED_MACRO_SERIES = [
     {"series_id": "CES0500000003","name":"平均時給（前年比）",      "tag": "WAGE",      "yoy": True,  "note": "ドル"},
     {"series_id": "UMCSENT",    "name": "ミシガン大消費者信頼感",   "tag": "UMCSENT",   "yoy": False, "note": ""},
     {"series_id": "JTSJOL",     "name": "JOLTS求人件数",            "tag": "JOLTS",     "yoy": False, "note": "千件"},
-    {"series_id": "NAPM",       "name": "ISM製造業PMI",             "tag": "ISM_MFG",   "yoy": False, "note": "50が好不況の分かれ目"},
-    {"series_id": "NMFCI",      "name": "ISMサービス業PMI",         "tag": "ISM_SVC",   "yoy": False, "note": "50が好不況の分かれ目"},
+    # ISM PMIは2016年にFREDから削除済み → S&Pグローバル製造業/サービス業PMIで代替
+    {"series_id": "MPMIUSMA",   "name": "製造業PMI（S&Pグローバル）","tag": "ISM_MFG",  "yoy": False, "note": "50が好不況の分かれ目"},
+    {"series_id": "MPMIUSSA",   "name": "サービス業PMI（S&Pグローバル）","tag": "ISM_SVC","yoy": False,"note": "50が好不況の分かれ目"},
+    # GDP成長率（実質GDP・年率）— 四半期データ
+    {"series_id": "A191RL1Q225SBEA","name":"GDP成長率（実質・年率）","tag": "GDP",      "yoy": False, "note": "四半期"},
 ]
 
 
