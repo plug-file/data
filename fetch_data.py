@@ -8,6 +8,7 @@ GitHub Actions から毎日自動実行される。
 import json
 import sys
 import re
+import os
 from datetime import datetime, timezone
 import yfinance as yf
 import requests
@@ -401,6 +402,254 @@ def _empty_jgb_results():
     ]
 
 
+# ── FRED API によるマクロ経済指標の自動取得 ────────────────────
+# APIキーが設定されていれば FRED API を使用、なければ CSV フォールバック
+#
+# 取得する指標:
+#   CPI (前年同月比), コアCPI, PCEデフレーター, 失業率,
+#   非農業部門雇用者数, 平均時給, GDP成長率, JOLTS求人件数,
+#   ミシガン大学消費者信頼感指数
+#
+# ISM製造業/サービス業PMIはFREDに直接データがないため、
+# ISM製造業のみ FRED シリーズ "NAPM" (旧名だが同データ) で取得を試みる。
+# サービス業は FRED に該当シリーズがないため手動更新のまま残す。
+
+FRED_API_BASE = "https://api.stlouisfed.org/fred/series/observations"
+
+# FREDシリーズ定義: (シリーズID, 表示名, タグ, 単位の説明, 前年比計算するか)
+FRED_MACRO_SERIES = [
+    # --- 前年同月比を自前計算するもの（月次・水準値） ---
+    {"series_id": "CPIAUCSL",   "name": "CPI（前年同月比）",       "tag": "CPI",       "yoy": True,  "note": ""},
+    {"series_id": "CPILFESL",   "name": "コアCPI（前年同月比）",   "tag": "CORE_CPI",  "yoy": True,  "note": "食品・エネルギー除く"},
+    {"series_id": "PCEPI",      "name": "PCEデフレーター（前年比）","tag": "PCE",       "yoy": True,  "note": "FRBが重視するインフレ指標"},
+    # --- そのまま使うもの（%や水準値） ---
+    {"series_id": "UNRATE",     "name": "失業率",                   "tag": "UNRATE",    "yoy": False, "note": ""},
+    {"series_id": "PAYEMS",     "name": "非農業部門雇用者数",       "tag": "NFP",       "yoy": False, "note": "千人", "mom_diff": True},
+    {"series_id": "CES0500000003","name":"平均時給（前年比）",      "tag": "WAGE",      "yoy": True,  "note": "ドル"},
+    {"series_id": "UMCSENT",    "name": "ミシガン大消費者信頼感",   "tag": "UMCSENT",   "yoy": False, "note": ""},
+    {"series_id": "JTSJOL",     "name": "JOLTS求人件数",            "tag": "JOLTS",     "yoy": False, "note": "千件"},
+    {"series_id": "NAPM",       "name": "ISM製造業PMI",             "tag": "ISM_MFG",   "yoy": False, "note": "50が好不況の分かれ目"},
+    {"series_id": "NMFCI",      "name": "ISMサービス業PMI",         "tag": "ISM_SVC",   "yoy": False, "note": "50が好不況の分かれ目"},
+]
+
+
+def fetch_fred_api(series_id: str, api_key: str, limit: int = 24) -> list:
+    """
+    FRED API から指定シリーズの直近 N 件の観測値を取得する。
+    返り値: [{"date": "YYYY-MM-DD", "value": float}, ...]
+    """
+    params = {
+        "series_id": series_id,
+        "api_key": api_key,
+        "file_type": "json",
+        "sort_order": "desc",
+        "limit": limit,
+    }
+    try:
+        r = requests.get(FRED_API_BASE, params=params, timeout=20)
+        r.raise_for_status()
+        data = r.json()
+        observations = data.get("observations", [])
+        results = []
+        for obs in reversed(observations):  # 古い順に並べ替え
+            val_str = obs.get("value", ".")
+            if val_str == ".":
+                continue
+            try:
+                results.append({
+                    "date": obs["date"],
+                    "value": float(val_str),
+                })
+            except (ValueError, KeyError):
+                continue
+        return results
+    except Exception as e:
+        print(f"  ⚠ FRED API error ({series_id}): {e}", file=sys.stderr)
+        return []
+
+
+def fetch_fred_csv_fallback(series_id: str, limit: int = 24) -> list:
+    """
+    FRED API キーがない場合のフォールバック: CSV 直接ダウンロード。
+    レート制限が緩いが、一部シリーズで使えない場合がある。
+    """
+    url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
+    try:
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
+        lines = r.text.strip().splitlines()
+        results = []
+        for line in lines[1:]:
+            cols = line.split(",")
+            if len(cols) < 2:
+                continue
+            val_str = cols[1].strip()
+            if val_str == "." or not val_str:
+                continue
+            try:
+                results.append({
+                    "date": cols[0].strip(),
+                    "value": float(val_str),
+                })
+            except ValueError:
+                continue
+        return results[-limit:]
+    except Exception as e:
+        print(f"  ⚠ FRED CSV fallback error ({series_id}): {e}", file=sys.stderr)
+        return []
+
+
+def compute_yoy(observations: list) -> tuple:
+    """
+    月次の水準データから前年同月比（%）を計算する。
+    返り値: (最新の前年比%, 前回の前年比%, 最新の発表月 "YYYY-MM")
+    """
+    if len(observations) < 13:
+        # 最低13カ月分ないと前年比が計算できない
+        return None, None, None
+
+    latest = observations[-1]
+    prev = observations[-2] if len(observations) >= 2 else None
+
+    # 12カ月前の値を探す
+    latest_date = latest["date"]  # "YYYY-MM-DD"
+    latest_ym = latest_date[:7]    # "YYYY-MM"
+
+    # 12カ月前
+    yr = int(latest_ym[:4])
+    mo = int(latest_ym[5:7])
+    yr_ago = yr - 1
+    target_ym = f"{yr_ago}-{mo:02d}"
+
+    val_12m_ago = None
+    for obs in observations:
+        if obs["date"][:7] == target_ym:
+            val_12m_ago = obs["value"]
+            break
+
+    if val_12m_ago is None or val_12m_ago == 0:
+        return None, None, latest_ym
+
+    yoy = round((latest["value"] - val_12m_ago) / val_12m_ago * 100, 1)
+
+    # 前回の前年比も計算（トレンド判断用）
+    prev_yoy = None
+    if prev:
+        prev_ym = prev["date"][:7]
+        p_yr = int(prev_ym[:4])
+        p_mo = int(prev_ym[5:7])
+        p_target = f"{p_yr - 1}-{p_mo:02d}"
+        for obs in observations:
+            if obs["date"][:7] == p_target:
+                if obs["value"] != 0:
+                    prev_yoy = round((prev["value"] - obs["value"]) / obs["value"] * 100, 1)
+                break
+
+    return yoy, prev_yoy, latest_ym
+
+
+def fetch_all_macro(api_key: str | None) -> dict:
+    """
+    全マクロ指標を取得して辞書で返す。
+    api_key が None の場合は CSV フォールバックを使用。
+    """
+    print("\n[macro] FRED マクロ経済指標")
+    if api_key:
+        print(f"  FRED API キー: 設定済み（{api_key[:4]}...）")
+    else:
+        print("  FRED API キー: 未設定 → CSV フォールバック")
+
+    macro = {}
+
+    for series_def in FRED_MACRO_SERIES:
+        sid = series_def["series_id"]
+        tag = series_def["tag"]
+        name = series_def["name"]
+        is_yoy = series_def.get("yoy", False)
+        is_mom_diff = series_def.get("mom_diff", False)
+        note = series_def.get("note", "")
+
+        print(f"  Fetching {sid} ({name}) ...", end=" ")
+
+        # データ取得（APIキーがあればAPI、なければCSV）
+        if api_key:
+            obs = fetch_fred_api(sid, api_key, limit=24)
+        else:
+            obs = fetch_fred_csv_fallback(sid, limit=24)
+
+        if not obs:
+            print("✗ データなし")
+            macro[tag] = {
+                "tag": tag, "name": name, "ok": False,
+                "value": None, "prev_value": None,
+                "date": None, "note": note, "trend": "neu",
+            }
+            continue
+
+        latest = obs[-1]
+        prev = obs[-2] if len(obs) >= 2 else None
+
+        if is_yoy:
+            # 前年同月比を計算
+            val, prev_val, date_str = compute_yoy(obs)
+            if val is not None:
+                trend = "up" if (prev_val is not None and val > prev_val) else \
+                        "dn" if (prev_val is not None and val < prev_val) else "neu"
+                macro[tag] = {
+                    "tag": tag, "name": name, "ok": True,
+                    "value": val, "prev_value": prev_val,
+                    "date": date_str, "note": note, "trend": trend,
+                    "display": f"+{val}%" if val >= 0 else f"{val}%",
+                }
+                print(f"✓ {val}%")
+            else:
+                macro[tag] = {
+                    "tag": tag, "name": name, "ok": False,
+                    "value": None, "prev_value": None,
+                    "date": None, "note": note, "trend": "neu",
+                }
+                print("✗ 前年比計算不可")
+
+        elif is_mom_diff:
+            # 前月差分（雇用者数の変化）
+            val = latest["value"]
+            prev_val = prev["value"] if prev else None
+            diff = None
+            if prev_val is not None:
+                diff = round(val - prev_val, 1)
+            date_str = latest["date"][:7]
+
+            trend = "up" if (diff is not None and diff > 0) else \
+                    "dn" if (diff is not None and diff < 0) else "neu"
+            macro[tag] = {
+                "tag": tag, "name": name, "ok": True,
+                "value": round(val, 1),
+                "change": diff,
+                "prev_value": round(prev_val, 1) if prev_val else None,
+                "date": date_str, "note": note, "trend": trend,
+                "display": f"+{diff:.0f}K" if diff and diff >= 0 else f"{diff:.0f}K" if diff else "—",
+            }
+            print(f"✓ {val:.0f} (変化: {diff})")
+
+        else:
+            # そのまま使う（失業率、PMI、消費者信頼感など）
+            val = round(latest["value"], 1)
+            prev_val = round(prev["value"], 1) if prev else None
+            date_str = latest["date"][:7]
+
+            trend = "up" if (prev_val is not None and val > prev_val) else \
+                    "dn" if (prev_val is not None and val < prev_val) else "neu"
+            macro[tag] = {
+                "tag": tag, "name": name, "ok": True,
+                "value": val, "prev_value": prev_val,
+                "date": date_str, "note": note, "trend": trend,
+                "display": f"{val}",
+            }
+            print(f"✓ {val}")
+
+    return macro
+
+
 def main():
     print("=== データ取得開始 ===")
     output = {
@@ -444,6 +693,11 @@ def main():
     output["sp500_pe"] = pe
     status = "✓" if pe["ok"] else "✗"
     print(f"  {status} {pe['symbol']}: {pe.get('price')}")
+
+    # FRED API: マクロ経済指標 → output["macro"] に追加
+    fred_api_key = os.environ.get("FRED_API_KEY")
+    macro = fetch_all_macro(fred_api_key)
+    output["macro"] = macro
 
     # docs/data.json に保存
     out_path = "docs/data.json"
