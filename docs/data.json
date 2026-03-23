@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-03-23 06:45 UTC",
-  "updated_jst": "2026年03月23日 15:45 JST",
+  "updated_at": "2026-03-23 12:13 UTC",
+  "updated_jst": "2026年03月23日 21:13 JST",
   "indices": [
     {
       "symbol": "^GSPC",
@@ -223,12 +223,12 @@
     {
       "symbol": "NIY=F",
       "name": "日経平均先物",
-      "price": 51110.0,
+      "price": 52545.0,
       "prev_close": 50945.0,
       "high_52w": 60070.0,
       "low_52w": 32140.0,
-      "change_pct": 0.324,
-      "from_high": -14.92,
+      "change_pct": 3.141,
+      "from_high": -12.53,
       "dates": [
         "02/23",
         "02/24",
@@ -273,7 +273,7 @@
         53635.0,
         53135.0,
         51280.0,
-        51110.0
+        52545.0
       ],
       "ok": true
     }
@@ -283,10 +283,10 @@
       "symbol": "NVDA",
       "name": "NVIDIA",
       "price": 172.93,
-      "prev_close": 179.1692,
+      "prev_close": 174.9,
       "high_52w": 212.19,
       "low_52w": 86.62,
-      "change_pct": -3.482,
+      "change_pct": -1.126,
       "from_high": -18.5,
       "dates": [
         "02/23",
@@ -338,10 +338,10 @@
       "symbol": "MSFT",
       "name": "Microsoft",
       "price": 381.85,
-      "prev_close": 389.5003,
+      "prev_close": 383.63,
       "high_52w": 555.45,
       "low_52w": 344.79,
-      "change_pct": -1.964,
+      "change_pct": -0.464,
       "from_high": -31.25,
       "dates": [
         "02/23",
@@ -448,10 +448,10 @@
       "symbol": "META",
       "name": "Meta",
       "price": 593.66,
-      "prev_close": 608.36,
+      "prev_close": 597.89,
       "high_52w": 796.25,
       "low_52w": 479.8,
-      "change_pct": -2.416,
+      "change_pct": -0.707,
       "from_high": -25.44,
       "dates": [
         "02/23",
@@ -503,10 +503,10 @@
       "symbol": "AMZN",
       "name": "Amazon",
       "price": 205.37,
-      "prev_close": 209.04,
+      "prev_close": 207.0299,
       "high_52w": 258.6,
       "low_52w": 161.38,
-      "change_pct": -1.756,
+      "change_pct": -0.802,
       "from_high": -20.58,
       "dates": [
         "02/23",
@@ -558,10 +558,10 @@
       "symbol": "GOOGL",
       "name": "Alphabet",
       "price": 301.0,
-      "prev_close": 307.33,
+      "prev_close": 302.77,
       "high_52w": 349.0,
       "low_52w": 140.53,
-      "change_pct": -2.06,
+      "change_pct": -0.585,
       "from_high": -13.75,
       "dates": [
         "02/23",
@@ -613,10 +613,10 @@
       "symbol": "TSLA",
       "name": "Tesla",
       "price": 367.96,
-      "prev_close": 382.6,
+      "prev_close": 372.2525,
       "high_52w": 498.83,
       "low_52w": 214.25,
-      "change_pct": -3.826,
+      "change_pct": -1.153,
       "from_high": -26.24,
       "dates": [
         "02/23",
@@ -1070,12 +1070,12 @@
       "symbol": "GC=F",
       "name": "金スポット",
       "icon": "🥇",
-      "price": 4240.7998,
+      "price": 4354.6001,
       "prev_close": 4355.2998,
       "high_52w": 5586.2002,
       "low_52w": 2949.7,
-      "change_pct": -2.629,
-      "from_high": -24.08,
+      "change_pct": -0.016,
+      "from_high": -22.05,
       "dates": [
         "02/23",
         "02/24",
@@ -1120,7 +1120,7 @@
         4889.8999,
         4600.7002,
         4570.3999,
-        4240.7998
+        4354.6001
       ],
       "ok": true
     },
@@ -1128,12 +1128,12 @@
       "symbol": "SI=F",
       "name": "銀スポット",
       "icon": "🥈",
-      "price": 62.2,
+      "price": 67.03,
       "prev_close": 65.405,
       "high_52w": 121.3,
       "low_52w": 28.31,
-      "change_pct": -4.9,
-      "from_high": -48.72,
+      "change_pct": 2.485,
+      "from_high": -44.74,
       "dates": [
         "02/23",
         "02/24",
@@ -1178,7 +1178,7 @@
         77.238,
         70.902,
         69.36,
-        62.2
+        67.03
       ],
       "ok": true
     },
@@ -1186,12 +1186,12 @@
       "symbol": "PL=F",
       "name": "プラチナ",
       "icon": "💎",
-      "price": 1747.0,
+      "price": 1835.2,
       "prev_close": 1838.0,
       "high_52w": 2852.3999,
       "low_52w": 884.5,
-      "change_pct": -4.951,
-      "from_high": -38.75,
+      "change_pct": -0.152,
+      "from_high": -35.66,
       "dates": [
         "02/23",
         "02/24",
@@ -1236,7 +1236,7 @@
         2052.0,
         1939.2,
         1970.6,
-        1747.0
+        1835.2
       ],
       "ok": true
     },
@@ -1244,12 +1244,12 @@
       "symbol": "CL=F",
       "name": "WTI原油",
       "icon": "🛢",
-      "price": 99.96,
+      "price": 92.71,
       "prev_close": 99.2,
       "high_52w": 119.48,
       "low_52w": 54.98,
-      "change_pct": 0.766,
-      "from_high": -16.34,
+      "change_pct": -6.542,
+      "from_high": -22.41,
       "dates": [
         "02/23",
         "02/24",
@@ -1294,7 +1294,7 @@
         96.32,
         96.14,
         98.32,
-        99.96
+        92.71
       ],
       "ok": true
     }
@@ -1314,12 +1314,12 @@
       "symbol": "USDJPY=X",
       "name": "ドル円",
       "icon": "¥",
-      "price": 159.59,
+      "price": 158.844,
       "prev_close": 159.22,
       "high_52w": 159.816,
       "low_52w": 139.892,
-      "change_pct": 0.232,
-      "from_high": -0.14,
+      "change_pct": -0.236,
+      "from_high": -0.61,
       "dates": [
         "02/23",
         "02/24",
@@ -1364,7 +1364,7 @@
         158.889,
         159.795,
         157.924,
-        159.59
+        158.849
       ],
       "ok": true
     },
@@ -1372,12 +1372,12 @@
       "symbol": "EURJPY=X",
       "name": "ユーロ円",
       "icon": "€",
-      "price": 183.888,
+      "price": 183.671,
       "prev_close": 184.248,
       "high_52w": 186.856,
       "low_52w": 159.06,
-      "change_pct": -0.195,
-      "from_high": -1.59,
+      "change_pct": -0.313,
+      "from_high": -1.7,
       "dates": [
         "02/23",
         "02/24",
@@ -1422,7 +1422,7 @@
         183.364,
         183.17,
         182.823,
-        183.888
+        183.671
       ],
       "ok": true
     },
@@ -1430,12 +1430,12 @@
       "symbol": "CHFJPY=X",
       "name": "スイスフラン円",
       "icon": "₣",
-      "price": 201.924,
+      "price": 201.184,
       "prev_close": 202.05,
       "high_52w": 203.966,
       "low_52w": 168.0654,
-      "change_pct": -0.062,
-      "from_high": -1.0,
+      "change_pct": -0.429,
+      "from_high": -1.36,
       "dates": [
         "02/23",
         "02/24",
@@ -1480,7 +1480,7 @@
         202.432,
         201.595,
         200.1741,
-        201.924
+        201.184
       ],
       "ok": true
     }
@@ -1490,12 +1490,12 @@
       "symbol": "BTC-USD",
       "name": "Bitcoin",
       "icon": "₿",
-      "price": 67809.2969,
+      "price": 70078.5156,
       "prev_close": 67846.7031,
       "high_52w": 126198.0703,
       "low_52w": 60074.2031,
-      "change_pct": -0.055,
-      "from_high": -46.27,
+      "change_pct": 3.289,
+      "from_high": -44.47,
       "dates": [
         "02/23",
         "02/24",
@@ -1556,7 +1556,7 @@
         70522.5859,
         68711.5234,
         67845.2109,
-        67809.2969
+        70078.5156
       ],
       "ok": true
     },
@@ -1564,12 +1564,12 @@
       "symbol": "ETH-USD",
       "name": "Ethereum",
       "icon": "Ξ",
-      "price": 2030.3088,
+      "price": 2125.7329,
       "prev_close": 2053.2236,
       "high_52w": 4953.7329,
       "low_52w": 1386.7993,
-      "change_pct": -1.116,
-      "from_high": -59.01,
+      "change_pct": 3.531,
+      "from_high": -57.09,
       "dates": [
         "02/23",
         "02/24",
@@ -1630,7 +1630,7 @@
         2146.4971,
         2076.6899,
         2053.0483,
-        2030.3088
+        2125.7329
       ],
       "ok": true
     }
@@ -1638,14 +1638,13 @@
   "vix": {
     "symbol": "^VIX",
     "name": "VIX 恐怖指数",
-    "price": 26.78,
-    "prev_close": 24.07,
+    "price": 27.16,
+    "prev_close": 26.76,
     "high_52w": 60.13,
-    "low_52w": null,
-    "change_pct": 11.259,
-    "from_high": -55.46,
+    "low_52w": 13.38,
+    "change_pct": 1.495,
+    "from_high": -54.83,
     "dates": [
-      "02/20",
       "02/23",
       "02/24",
       "02/25",
@@ -1665,10 +1664,10 @@
       "03/17",
       "03/18",
       "03/19",
-      "03/20"
+      "03/20",
+      "03/23"
     ],
     "closes": [
-      19.09,
       21.01,
       19.55,
       17.93,
@@ -1688,7 +1687,8 @@
       22.37,
       25.09,
       24.06,
-      26.78
+      26.78,
+      27.16
     ],
     "ok": true
   },
@@ -1794,7 +1794,7 @@
     },
     "ISM_MFG": {
       "tag": "ISM_MFG",
-      "name": "ISM製造業PMI",
+      "name": "製造業PMI（S&Pグローバル）",
       "ok": false,
       "value": null,
       "prev_value": null,
@@ -1804,13 +1804,24 @@
     },
     "ISM_SVC": {
       "tag": "ISM_SVC",
-      "name": "ISMサービス業PMI",
+      "name": "サービス業PMI（S&Pグローバル）",
       "ok": false,
       "value": null,
       "prev_value": null,
       "date": null,
       "note": "50が好不況の分かれ目",
       "trend": "neu"
+    },
+    "GDP": {
+      "tag": "GDP",
+      "name": "GDP成長率（実質・年率）",
+      "ok": true,
+      "value": 0.7,
+      "prev_value": 4.4,
+      "date": "2025-10",
+      "note": "四半期",
+      "trend": "dn",
+      "display": "0.7"
     }
   }
 }
