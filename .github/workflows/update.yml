@@ -1,9 +1,11 @@
 name: Update Market Data
 
 on:
-  # schedule:
-  #   # 毎日 月〜金 22:00 UTC（日本時間 翌朝7時・市場クローズ後）
-  #   - cron: "0 22 * * 1-6"
+  schedule:
+    # 毎日 月〜金 22:00 UTC（日本時間 翌朝7時・市場クローズ後）
+    - cron: "0 22 * * 1-5"
+    # 毎週土曜 01:00 UTC（週次チェック用）
+    - cron: "0 1 * * 6"
   workflow_dispatch:  # 手動実行ボタンも有効
 
 jobs:
@@ -28,6 +30,7 @@ jobs:
       - name: Fetch market data
         env:
           TWELVEDATA_API_KEY: ${{ secrets.TWELVEDATA_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python fetch_data.py
 
       - name: Commit and push data.json
