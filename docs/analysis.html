@@ -7,177 +7,192 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0b0d;
-  --card: rgba(255,255,255,0.03);
-  --border: rgba(255,255,255,0.08);
-  --tx: #e5e7eb;
-  --t2: #9ca3af;
-  --t3: #6b7280;
-  --t4: #4b5563;
-  --amber: #f59e0b;
-  --green: #22c55e;
-  --green-dim: #86efac;
-  --yellow: #facc15;
-  --orange: #fb923c;
-  --red: #ef4444;
-  --blue: #3b82f6;
-  --purple: #a78bfa;
+  --bg: #e9e9e9;
+  --white: #ffffff;
+  --card: #ffffff;
+  --border: #e0e0db;
+  --border2: #d0d0cb;
+  --tx: #1a1a1a;
+  --t2: #444444;
+  --t3: #777777;
+  --t4: #999999;
+  --amber: #b45309;
+  --amber-bg: #fef3c7;
+  --amber-bd: #fde68a;
+  --green: #16a34a;
+  --green-bg: #dcfce7;
+  --green-bd: #bbf7d0;
+  --yellow: #a16207;
+  --orange: #c2410c;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --blue: #2563eb;
+  --blue-bg: #eff6ff;
+  --purple: #7c3aed;
   --mono: 'DM Mono', monospace;
   --sans: 'DM Sans', 'Noto Sans JP', sans-serif;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:var(--sans); background:var(--bg); color:var(--tx); -webkit-font-smoothing:antialiased; font-size:14px; line-height:1.5; }
-a { color:var(--amber); text-decoration:none; }
+body { font-family:var(--sans); background:var(--bg); color:var(--tx); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; font-weight:600; }
+a { color:var(--amber); text-decoration:none; font-weight:700; }
 a:hover { text-decoration:underline; }
 
 /* Header */
 .header {
-  background:linear-gradient(135deg,#0a0b0d 0%,#141620 100%);
+  background:var(--white);
   border-bottom:1px solid var(--border);
   padding:28px 24px 24px;
 }
-.header-inner { max-width:920px; margin:0 auto; }
-.header-top { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+.header-inner { max-width:960px; margin:0 auto; }
+.header-top { display:flex; align-items:center; gap:14px; margin-bottom:6px; }
 .logo-icon {
-  width:40px; height:40px; border-radius:10px;
+  width:44px; height:44px; border-radius:10px;
   background:linear-gradient(135deg,#f59e0b,#d97706);
   display:flex; align-items:center; justify-content:center;
-  font-size:18px; font-weight:700; color:#0a0b0d; font-family:var(--mono);
+  font-size:20px; font-weight:700; color:#fff; font-family:var(--mono);
   flex-shrink:0;
 }
-.header-title { font-size:20px; font-weight:700; letter-spacing:-0.5px; }
-.header-sub { font-size:11px; color:var(--t3); margin-top:2px; }
-.nav-back { font-size:12px; color:var(--t3); margin-top:12px; }
+.header-title { font-size:22px; font-weight:700; letter-spacing:-0.5px; color:var(--tx); }
+.header-sub { font-size:13px; color:var(--t3); margin-top:2px; font-weight:600; }
+.nav-back { font-size:14px; color:var(--t3); margin-top:12px; font-weight:600; }
 .nav-back a { color:var(--amber); }
 
 /* Verdict Banner */
 .verdict-banner {
-  margin-top:20px; padding:16px 20px; border-radius:12px;
+  margin-top:20px; padding:20px 24px; border-radius:12px;
+  background:var(--white);
+  border:2px solid var(--border);
   display:flex; align-items:center; justify-content:space-between;
   flex-wrap:wrap; gap:12px;
 }
-.verdict-label { font-size:11px; color:#8a8f98; letter-spacing:1px; text-transform:uppercase; }
-.verdict-value { font-size:28px; font-weight:700; margin-top:4px; }
-.verdict-score { font-size:13px; color:var(--t2); margin-left:10px; }
-.verdict-reasons { font-size:12px; color:var(--t2); max-width:380px; line-height:1.6; }
+.verdict-label { font-size:13px; color:var(--t3); letter-spacing:1px; text-transform:uppercase; font-weight:700; }
+.verdict-value { font-size:32px; font-weight:700; margin-top:4px; }
+.verdict-score { font-size:15px; color:var(--t2); margin-left:10px; font-weight:700; }
+.verdict-reasons { font-size:14px; color:var(--t2); max-width:400px; line-height:1.7; font-weight:600; }
 
 /* Updated time */
 .updated-time {
   display:inline-flex; align-items:center; gap:6px;
-  font-family:var(--mono); font-size:10px; color:var(--t3);
-  background:rgba(255,255,255,0.04); border:1px solid var(--border);
-  padding:4px 10px; border-radius:8px; margin-top:12px;
+  font-family:var(--mono); font-size:12px; color:var(--t3);
+  background:var(--white); border:1px solid var(--border);
+  padding:5px 12px; border-radius:8px; margin-top:12px; font-weight:600;
 }
-.live-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+.live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
 /* Main */
-.main { max-width:920px; margin:0 auto; padding:24px 24px 60px; }
+.main { max-width:960px; margin:0 auto; padding:24px 24px 60px; }
 
 /* Section */
-.sec-num { font-size:14px; font-weight:700; color:var(--amber); letter-spacing:0.5px; margin-bottom:4px; }
-.sec-title { font-size:18px; font-weight:700; margin-bottom:6px; }
-.sec-desc { font-size:13px; color:var(--t2); margin-bottom:20px; line-height:1.7; max-width:700px; }
-.section { margin-bottom:36px; }
+.sec-num { font-size:15px; font-weight:700; color:var(--amber); letter-spacing:0.5px; margin-bottom:4px; }
+.sec-title { font-size:20px; font-weight:700; margin-bottom:8px; color:var(--tx); }
+.sec-desc { font-size:15px; color:var(--t2); margin-bottom:20px; line-height:1.8; max-width:720px; font-weight:600; }
+.section { margin-bottom:40px; }
 
 /* Grid */
-.grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
-.grid-2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:8px; }
+.grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; }
+.grid-2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:10px; }
 
 /* Gauge Card */
 .gauge-card {
   background:var(--card); border:1px solid var(--border);
-  border-radius:12px; padding:20px 24px;
+  border-radius:12px; padding:22px 24px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
-.gauge-label { font-size:11px; color:#8a8f98; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
-.gauge-value-row { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
-.gauge-value { font-size:32px; font-weight:700; font-family:var(--mono); }
-.gauge-status { font-size:13px; font-weight:600; }
-.gauge-desc { font-size:12px; color:var(--t3); margin-bottom:12px; line-height:1.5; }
-.gauge-bar { position:relative; height:6px; border-radius:3px; overflow:visible; background:rgba(255,255,255,0.06); }
-.gauge-zone { position:absolute; height:100%; opacity:0.25; }
+.gauge-label { font-size:13px; color:var(--t3); letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; font-weight:700; }
+.gauge-value-row { display:flex; align-items:baseline; gap:10px; margin-bottom:6px; }
+.gauge-value { font-size:36px; font-weight:700; font-family:var(--mono); }
+.gauge-status { font-size:15px; font-weight:700; }
+.gauge-desc { font-size:14px; color:var(--t2); margin-bottom:14px; line-height:1.6; font-weight:600; }
+.gauge-bar { position:relative; height:8px; border-radius:4px; overflow:visible; background:#e5e5e0; }
+.gauge-zone { position:absolute; height:100%; opacity:0.3; }
 .gauge-dot {
-  position:absolute; top:-3px; width:12px; height:12px; border-radius:50%;
+  position:absolute; top:-4px; width:16px; height:16px; border-radius:50%;
   transform:translateX(-50%); transition:left 0.5s ease;
+  border:2px solid var(--white);
 }
-.gauge-range { display:flex; justify-content:space-between; margin-top:6px; font-size:10px; color:#555; }
+.gauge-range { display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--t4); font-weight:600; }
 
 /* Yield Bars */
 .yield-chart {
   background:var(--card); border:1px solid var(--border);
-  border-radius:12px; padding:20px 24px; margin-top:16px;
+  border-radius:12px; padding:22px 24px; margin-top:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
-.yield-chart-label { font-size:12px; color:#8a8f98; margin-bottom:16px; letter-spacing:0.5px; }
-.yield-bars { display:flex; gap:0; align-items:flex-end; height:140px; }
+.yield-chart-label { font-size:14px; color:var(--t3); margin-bottom:18px; letter-spacing:0.5px; font-weight:700; }
+.yield-bars { display:flex; gap:0; align-items:flex-end; height:150px; }
 .yield-bar-item { flex:1; text-align:center; position:relative; }
-.yield-bar-val { font-size:18px; font-weight:700; font-family:var(--mono); margin-bottom:8px; }
+.yield-bar-val { font-size:20px; font-weight:700; font-family:var(--mono); margin-bottom:10px; }
 .yield-bar-fill { margin:0 12px; border-radius:4px 4px 0 0; transition:height 0.6s ease; }
-.yield-bar-name { font-size:10px; color:var(--t3); margin-top:8px; white-space:pre-line; line-height:1.4; }
+.yield-bar-name { font-size:12px; color:var(--t2); margin-top:10px; white-space:pre-line; line-height:1.5; font-weight:700; }
 
-/* Anomaly Chart (canvas) */
+/* Anomaly Chart */
 .anomaly-chart-wrap {
   background:var(--card); border:1px solid var(--border);
-  border-radius:12px; padding:20px 24px; margin-bottom:16px;
+  border-radius:12px; padding:22px 24px; margin-bottom:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
-.anomaly-chart-label { font-size:12px; color:#8a8f98; margin-bottom:12px; }
-.anomaly-bars { display:flex; align-items:flex-end; height:160px; gap:4px; }
+.anomaly-chart-label { font-size:14px; color:var(--t3); margin-bottom:14px; font-weight:700; }
+.anomaly-bars { display:flex; align-items:flex-end; height:170px; gap:4px; }
 .anomaly-bar { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative; }
 .anomaly-bar-fill { width:80%; border-radius:3px 3px 0 0; transition:height 0.4s ease; min-height:2px; position:relative; }
-.anomaly-bar-val { font-size:9px; font-family:var(--mono); color:var(--t2); position:absolute; top:-16px; width:100%; text-align:center; }
-.anomaly-bar-label { font-size:10px; color:var(--t3); margin-top:6px; }
-.anomaly-zero { position:absolute; bottom:80px; left:0; right:0; height:1px; background:rgba(255,255,255,0.08); }
+.anomaly-bar-val { font-size:11px; font-family:var(--mono); color:var(--t2); position:absolute; top:-18px; width:100%; text-align:center; font-weight:700; }
+.anomaly-bar-label { font-size:12px; color:var(--t2); margin-top:6px; font-weight:700; }
+.anomaly-zero { position:absolute; bottom:80px; left:0; right:0; height:1px; background:var(--border); }
 .anomaly-note {
-  margin-top:12px; padding:10px 14px;
-  background:rgba(245,158,11,0.08); border-radius:8px;
-  font-size:12px; color:var(--amber); line-height:1.5;
+  margin-top:14px; padding:12px 16px;
+  background:var(--amber-bg); border:1px solid var(--amber-bd);
+  border-radius:8px;
+  font-size:14px; color:var(--amber); line-height:1.6; font-weight:700;
 }
 
 /* Demand Events */
 .demand-card {
-  display:flex; align-items:center; gap:10px;
-  padding:10px 14px; border-radius:8px;
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; border-radius:8px;
 }
-.demand-card.bullish { background:rgba(34,197,94,0.06); border-left:3px solid var(--green); }
-.demand-card.bearish { background:rgba(239,68,68,0.06); border-left:3px solid var(--red); }
-.demand-type { font-size:10px; font-weight:600; min-width:50px; }
-.demand-event { font-size:12px; color:var(--tx); font-weight:500; }
-.demand-period { font-size:10px; color:var(--t3); }
+.demand-card.bullish { background:#f0fdf4; border-left:4px solid var(--green); }
+.demand-card.bearish { background:#fef2f2; border-left:4px solid var(--red); }
+.demand-type { font-size:12px; font-weight:700; min-width:55px; }
+.demand-event { font-size:14px; color:var(--tx); font-weight:700; }
+.demand-period { font-size:12px; color:var(--t3); font-weight:600; }
 
 /* Reason list */
 .reason-item {
-  display:flex; align-items:flex-start; gap:12px;
-  padding:12px 0;
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  display:flex; align-items:flex-start; gap:14px;
+  padding:14px 0;
+  border-bottom:1px solid var(--border);
 }
 .reason-item:last-child { border-bottom:none; }
 .reason-num {
-  width:24px; height:24px; border-radius:6px;
-  background:rgba(245,158,11,0.15); color:var(--amber);
+  width:28px; height:28px; border-radius:6px;
+  background:var(--amber-bg); color:var(--amber);
   display:flex; align-items:center; justify-content:center;
-  font-size:11px; font-weight:700; flex-shrink:0;
+  font-size:13px; font-weight:700; flex-shrink:0;
+  border:1px solid var(--amber-bd);
 }
-.reason-text { font-size:13px; color:#d1d5db; line-height:1.6; }
+.reason-text { font-size:15px; color:var(--tx); line-height:1.7; font-weight:600; }
 
 /* Data source info */
 .data-source {
-  background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.15);
-  border-radius:12px; padding:16px 20px; margin-bottom:28px;
+  background:var(--blue-bg); border:1px solid #bfdbfe;
+  border-radius:12px; padding:18px 22px; margin-bottom:28px;
 }
-.data-source-title { font-size:12px; color:var(--blue); font-weight:600; margin-bottom:6px; }
-.data-source-text { font-size:12px; color:var(--t2); line-height:1.6; }
+.data-source-title { font-size:14px; color:var(--blue); font-weight:700; margin-bottom:8px; }
+.data-source-text { font-size:14px; color:var(--t2); line-height:1.7; font-weight:600; }
 
 /* Footer */
 .footer {
-  text-align:center; padding:24px 0;
-  border-top:1px solid rgba(255,255,255,0.06);
-  font-size:11px; color:var(--t4); line-height:1.8;
+  text-align:center; padding:28px 0;
+  border-top:1px solid var(--border);
+  font-size:13px; color:var(--t3); line-height:1.9; font-weight:600;
 }
-.footer-highlight { color:var(--t3); margin-top:8px; }
+.footer-highlight { color:var(--t2); margin-top:8px; font-weight:700; }
 
 /* Loading */
-.loading { text-align:center; padding:60px 20px; color:var(--t3); }
+.loading { text-align:center; padding:60px 20px; color:var(--t3); font-weight:700; font-size:15px; }
 .loading-spinner {
-  width:32px; height:32px; border:3px solid var(--border);
+  width:36px; height:36px; border:3px solid var(--border);
   border-top-color:var(--amber); border-radius:50%;
   animation:spin 0.8s linear infinite; margin:0 auto 16px;
 }
@@ -187,11 +202,12 @@ a:hover { text-decoration:underline; }
 @media (max-width:640px) {
   .header { padding:20px 16px; }
   .main { padding:16px 16px 48px; }
-  .header-title { font-size:16px; }
-  .verdict-value { font-size:22px; }
-  .gauge-value { font-size:24px; }
-  .yield-bar-val { font-size:14px; }
+  .header-title { font-size:18px; }
+  .verdict-value { font-size:26px; }
+  .gauge-value { font-size:28px; }
+  .yield-bar-val { font-size:16px; }
   .grid-3 { grid-template-columns:1fr; }
+  body { font-size:15px; }
 }
 </style>
 </head>
@@ -289,7 +305,7 @@ function renderGauge(label, value, description, min, max, zones) {
     <div class="gauge-desc">${description}</div>
     <div class="gauge-bar">
       ${zonesHtml}
-      <div class="gauge-dot" style="left:${pct}%;background:${zone.color};box-shadow:0 0 8px ${zone.color}40"></div>
+      <div class="gauge-dot" style="left:${pct}%;background:${zone.color};box-shadow:0 0 10px ${zone.color}50"></div>
     </div>
     <div class="gauge-range"><span>${min}</span><span>${max}</span></div>
   </div>`;
@@ -429,8 +445,8 @@ function render(json) {
 
   // Verdict banner
   const banner = document.getElementById('verdictBanner');
-  banner.style.background = a.verdictColor + '10';
-  banner.style.border = `1px solid ${a.verdictColor}30`;
+  banner.style.background = a.verdictColor + '15';
+  banner.style.border = `2px solid ${a.verdictColor}40`;
   document.getElementById('verdictText').textContent = a.verdict;
   document.getElementById('verdictText').style.color = a.verdictColor;
   document.getElementById('verdictScore').textContent = `スコア: ${a.score > 0 ? '+' : ''}${a.score}`;
@@ -442,7 +458,7 @@ function render(json) {
 
   // ── Data source info ──
   if (d.hasMacroData) {
-    main.innerHTML += `<div class="data-source" style="background:rgba(34,197,94,0.06);border-color:rgba(34,197,94,0.15)">
+    main.innerHTML += `<div class="data-source" style="background:#f0fdf4;border-color:#bbf7d0">
       <div class="data-source-title" style="color:#22c55e">✓ 全指標自動取得中（FRED API連携済み）</div>
       <div class="data-source-text">
         市場データ（yfinance）+ マクロ経済指標（FRED API）の両方を <strong>data.json</strong> から自動読み込みしています。<br>
@@ -515,7 +531,7 @@ function render(json) {
     const sign = b.value >= 0 ? '+' : '';
     s1 += `<div class="yield-bar-item">
       <div class="yield-bar-val" style="color:${b.color}">${sign}${b.value.toFixed(2)}%</div>
-      <div class="yield-bar-fill" style="height:${h}px;background:${b.color}30;border-top:3px solid ${b.color}"></div>
+      <div class="yield-bar-fill" style="height:${h}px;background:${b.color}20;border-top:4px solid ${b.color}"></div>
       <div class="yield-bar-name">${b.label}</div>
     </div>`;
   });
@@ -598,36 +614,36 @@ function render(json) {
       <div class="gauge-card" style="overflow-x:auto">
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead>
-          <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
-            <th style="text-align:left;padding:8px 12px;color:#8a8f98;font-weight:600">指標</th>
-            <th style="text-align:right;padding:8px 12px;color:#8a8f98;font-weight:600">最新値</th>
-            <th style="text-align:right;padding:8px 12px;color:#8a8f98;font-weight:600">前回値</th>
-            <th style="text-align:center;padding:8px 12px;color:#8a8f98;font-weight:600">方向</th>
-            <th style="text-align:right;padding:8px 12px;color:#8a8f98;font-weight:600">発表月</th>
-            <th style="text-align:left;padding:8px 12px;color:#8a8f98;font-weight:600">備考</th>
+          <tr style="border-bottom:2px solid #e0e0db">
+            <th style="text-align:left;padding:8px 12px;color:#666;font-weight:700;font-size:13px">指標</th>
+            <th style="text-align:right;padding:8px 12px;color:#666;font-weight:700;font-size:13px">最新値</th>
+            <th style="text-align:right;padding:8px 12px;color:#666;font-weight:700;font-size:13px">前回値</th>
+            <th style="text-align:center;padding:8px 12px;color:#666;font-weight:700;font-size:13px">方向</th>
+            <th style="text-align:right;padding:8px 12px;color:#666;font-weight:700;font-size:13px">発表月</th>
+            <th style="text-align:left;padding:8px 12px;color:#666;font-weight:700;font-size:13px">備考</th>
           </tr>
         </thead><tbody>`;
 
     macroRows.forEach(row => {
       const meta = d.macroMeta[row.tag];
       if (!meta) {
-        mtHtml += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+        mtHtml += `<tr style="border-bottom:1px solid #eeeeea">
           <td style="padding:8px 12px">${row.label}</td>
-          <td style="text-align:right;padding:8px 12px;color:#555">—</td>
-          <td style="text-align:right;padding:8px 12px;color:#555">—</td>
+          <td style="text-align:right;padding:8px 12px;color:#999;font-weight:600">—</td>
+          <td style="text-align:right;padding:8px 12px;color:#999;font-weight:600">—</td>
           <td style="text-align:center;padding:8px 12px">—</td>
-          <td style="text-align:right;padding:8px 12px;color:#555">—</td>
-          <td style="padding:8px 12px;color:#555;font-size:11px">データなし</td>
+          <td style="text-align:right;padding:8px 12px;color:#999;font-weight:600">—</td>
+          <td style="padding:8px 12px;color:#999;font-size:13px;font-weight:600">データなし</td>
         </tr>`;
         return;
       }
-      mtHtml += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+      mtHtml += `<tr style="border-bottom:1px solid #eeeeea">
         <td style="padding:8px 12px;font-weight:500">${row.label}</td>
-        <td style="text-align:right;padding:8px 12px;font-family:var(--mono);font-weight:600;color:#e5e7eb">${meta.display}</td>
-        <td style="text-align:right;padding:8px 12px;font-family:var(--mono);color:#6b7280">${meta.prev_value != null ? meta.prev_value : '—'}</td>
+        <td style="text-align:right;padding:8px 12px;font-family:var(--mono);font-weight:700;color:#1a1a1a">${meta.display}</td>
+        <td style="text-align:right;padding:8px 12px;font-family:var(--mono);color:#666;font-weight:600">${meta.prev_value != null ? meta.prev_value : '—'}</td>
         <td style="text-align:center;padding:8px 12px">${trendIcon[meta.trend] || '—'}</td>
-        <td style="text-align:right;padding:8px 12px;color:#6b7280;font-size:12px">${meta.date}</td>
-        <td style="padding:8px 12px;color:#6b7280;font-size:11px">${meta.note}</td>
+        <td style="text-align:right;padding:8px 12px;color:#666;font-size:13px;font-weight:600">${meta.date}</td>
+        <td style="padding:8px 12px;color:#777;font-size:13px;font-weight:600">${meta.note}</td>
       </tr>`;
     });
 
