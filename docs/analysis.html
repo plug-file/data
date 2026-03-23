@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バフェット太郎の投資判断ダッシュボード</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0b0d;
+  --card: rgba(255,255,255,0.03);
+  --border: rgba(255,255,255,0.08);
+  --tx: #e5e7eb;
+  --t2: #9ca3af;
+  --t3: #6b7280;
+  --t4: #4b5563;
+  --amber: #f59e0b;
+  --green: #22c55e;
+  --green-dim: #86efac;
+  --yellow: #facc15;
+  --orange: #fb923c;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --purple: #a78bfa;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', 'Noto Sans JP', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); background:var(--bg); color:var(--tx); -webkit-font-smoothing:antialiased; font-size:14px; line-height:1.5; }
+a { color:var(--amber); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+/* Header */
+.header {
+  background:linear-gradient(135deg,#0a0b0d 0%,#141620 100%);
+  border-bottom:1px solid var(--border);
+  padding:28px 24px 24px;
+}
+.header-inner { max-width:920px; margin:0 auto; }
+.header-top { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+.logo-icon {
+  width:40px; height:40px; border-radius:10px;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; font-weight:700; color:#0a0b0d; font-family:var(--mono);
+  flex-shrink:0;
+}
+.header-title { font-size:20px; font-weight:700; letter-spacing:-0.5px; }
+.header-sub { font-size:11px; color:var(--t3); margin-top:2px; }
+.nav-back { font-size:12px; color:var(--t3); margin-top:12px; }
+.nav-back a { color:var(--amber); }
+
+/* Verdict Banner */
+.verdict-banner {
+  margin-top:20px; padding:16px 20px; border-radius:12px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:12px;
+}
+.verdict-label { font-size:11px; color:#8a8f98; letter-spacing:1px; text-transform:uppercase; }
+.verdict-value { font-size:28px; font-weight:700; margin-top:4px; }
+.verdict-score { font-size:13px; color:var(--t2); margin-left:10px; }
+.verdict-reasons { font-size:12px; color:var(--t2); max-width:380px; line-height:1.6; }
+
+/* Updated time */
+.updated-time {
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--mono); font-size:10px; color:var(--t3);
+  background:rgba(255,255,255,0.04); border:1px solid var(--border);
+  padding:4px 10px; border-radius:8px; margin-top:12px;
+}
+.live-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* Main */
+.main { max-width:920px; margin:0 auto; padding:24px 24px 60px; }
+
+/* Section */
+.sec-num { font-size:14px; font-weight:700; color:var(--amber); letter-spacing:0.5px; margin-bottom:4px; }
+.sec-title { font-size:18px; font-weight:700; margin-bottom:6px; }
+.sec-desc { font-size:13px; color:var(--t2); margin-bottom:20px; line-height:1.7; max-width:700px; }
+.section { margin-bottom:36px; }
+
+/* Grid */
+.grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+.grid-2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:8px; }
+
+/* Gauge Card */
+.gauge-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:20px 24px;
+}
+.gauge-label { font-size:11px; color:#8a8f98; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.gauge-value-row { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
+.gauge-value { font-size:32px; font-weight:700; font-family:var(--mono); }
+.gauge-status { font-size:13px; font-weight:600; }
+.gauge-desc { font-size:12px; color:var(--t3); margin-bottom:12px; line-height:1.5; }
+.gauge-bar { position:relative; height:6px; border-radius:3px; overflow:visible; background:rgba(255,255,255,0.06); }
+.gauge-zone { position:absolute; height:100%; opacity:0.25; }
+.gauge-dot {
+  position:absolute; top:-3px; width:12px; height:12px; border-radius:50%;
+  transform:translateX(-50%); transition:left 0.5s ease;
+}
+.gauge-range { display:flex; justify-content:space-between; margin-top:6px; font-size:10px; color:#555; }
+
+/* Yield Bars */
+.yield-chart {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:20px 24px; margin-top:16px;
+}
+.yield-chart-label { font-size:12px; color:#8a8f98; margin-bottom:16px; letter-spacing:0.5px; }
+.yield-bars { display:flex; gap:0; align-items:flex-end; height:140px; }
+.yield-bar-item { flex:1; text-align:center; position:relative; }
+.yield-bar-val { font-size:18px; font-weight:700; font-family:var(--mono); margin-bottom:8px; }
+.yield-bar-fill { margin:0 12px; border-radius:4px 4px 0 0; transition:height 0.6s ease; }
+.yield-bar-name { font-size:10px; color:var(--t3); margin-top:8px; white-space:pre-line; line-height:1.4; }
+
+/* Anomaly Chart (canvas) */
+.anomaly-chart-wrap {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:20px 24px; margin-bottom:16px;
+}
+.anomaly-chart-label { font-size:12px; color:#8a8f98; margin-bottom:12px; }
+.anomaly-bars { display:flex; align-items:flex-end; height:160px; gap:4px; }
+.anomaly-bar { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative; }
+.anomaly-bar-fill { width:80%; border-radius:3px 3px 0 0; transition:height 0.4s ease; min-height:2px; position:relative; }
+.anomaly-bar-val { font-size:9px; font-family:var(--mono); color:var(--t2); position:absolute; top:-16px; width:100%; text-align:center; }
+.anomaly-bar-label { font-size:10px; color:var(--t3); margin-top:6px; }
+.anomaly-zero { position:absolute; bottom:80px; left:0; right:0; height:1px; background:rgba(255,255,255,0.08); }
+.anomaly-note {
+  margin-top:12px; padding:10px 14px;
+  background:rgba(245,158,11,0.08); border-radius:8px;
+  font-size:12px; color:var(--amber); line-height:1.5;
+}
+
+/* Demand Events */
+.demand-card {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px; border-radius:8px;
+}
+.demand-card.bullish { background:rgba(34,197,94,0.06); border-left:3px solid var(--green); }
+.demand-card.bearish { background:rgba(239,68,68,0.06); border-left:3px solid var(--red); }
+.demand-type { font-size:10px; font-weight:600; min-width:50px; }
+.demand-event { font-size:12px; color:var(--tx); font-weight:500; }
+.demand-period { font-size:10px; color:var(--t3); }
+
+/* Reason list */
+.reason-item {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.reason-item:last-child { border-bottom:none; }
+.reason-num {
+  width:24px; height:24px; border-radius:6px;
+  background:rgba(245,158,11,0.15); color:var(--amber);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; flex-shrink:0;
+}
+.reason-text { font-size:13px; color:#d1d5db; line-height:1.6; }
+
+/* Data source info */
+.data-source {
+  background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.15);
+  border-radius:12px; padding:16px 20px; margin-bottom:28px;
+}
+.data-source-title { font-size:12px; color:var(--blue); font-weight:600; margin-bottom:6px; }
+.data-source-text { font-size:12px; color:var(--t2); line-height:1.6; }
+
+/* Footer */
+.footer {
+  text-align:center; padding:24px 0;
+  border-top:1px solid rgba(255,255,255,0.06);
+  font-size:11px; color:var(--t4); line-height:1.8;
+}
+.footer-highlight { color:var(--t3); margin-top:8px; }
+
+/* Loading */
+.loading { text-align:center; padding:60px 20px; color:var(--t3); }
+.loading-spinner {
+  width:32px; height:32px; border:3px solid var(--border);
+  border-top-color:var(--amber); border-radius:50%;
+  animation:spin 0.8s linear infinite; margin:0 auto 16px;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* Responsive */
+@media (max-width:640px) {
+  .header { padding:20px 16px; }
+  .main { padding:16px 16px 48px; }
+  .header-title { font-size:16px; }
+  .verdict-value { font-size:22px; }
+  .gauge-value { font-size:24px; }
+  .yield-bar-val { font-size:14px; }
+  .grid-3 { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="logo-icon">BT</div>
+      <div>
+        <div class="header-title">バフェット太郎の投資判断ダッシュボード</div>
+        <div class="header-sub">数字と数字の「関係性」から市場を読み解く</div>
+      </div>
+    </div>
+    <div class="nav-back"><a href="index.html">← マーケットインフォ に戻る</a></div>
+    <div class="updated-time"><div class="live-dot"></div><span id="updatedAt">読み込み中…</span></div>
+
+    <!-- Verdict Banner (JS fills) -->
+    <div class="verdict-banner" id="verdictBanner">
+      <div>
+        <div class="verdict-label">バフェット太郎の総合判定</div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-top:4px">
+          <span class="verdict-value" id="verdictText">—</span>
+          <span class="verdict-score" id="verdictScore"></span>
+        </div>
+      </div>
+      <div class="verdict-reasons" id="verdictReasons"></div>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="mainContent">
+  <div class="loading" id="loadingState">
+    <div class="loading-spinner"></div>
+    data.json を読み込んでいます…
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   バフェット太郎 分析ダッシュボード — Pure JS (GitHub Pages用)
+   data.json から自動でデータを読み込み、分析・可視化する
+   ============================================================ */
+
+// ── アノマリーデータ（1950-2024年 S&P500月間平均騰落率） ──
+const ANOMALY = [
+  { month:"1月", avg:1.2, winRate:62, note:"1月相場がその年を占う（88.9%の精度）" },
+  { month:"2月", avg:0.1, winRate:53, note:"" },
+  { month:"3月", avg:1.0, winRate:65, note:"" },
+  { month:"4月", avg:1.5, winRate:70, note:"確定申告後の資金流入" },
+  { month:"5月", avg:0.2, winRate:55, note:"Sell in May — 夏の軟調相場の始まり" },
+  { month:"6月", avg:0.1, winRate:53, note:"" },
+  { month:"7月", avg:1.0, winRate:59, note:"" },
+  { month:"8月", avg:-0.1, winRate:52, note:"バカンスで出来高低下" },
+  { month:"9月", avg:-0.7, winRate:45, note:"一年で最も悪い月" },
+  { month:"10月", avg:0.8, winRate:59, note:"底打ちの月・タックスロスセリング開始" },
+  { month:"11月", avg:1.5, winRate:68, note:"最高の6カ月の始まり" },
+  { month:"12月", avg:1.5, winRate:74, note:"サンタクロースラリー（約8割で株高）" },
+];
+
+const DEMAND_EVENTS = [
+  { period:"1月上旬", event:"サンタクロースラリー後半", type:"bullish" },
+  { period:"1月", event:"1月効果（小型株上昇）", type:"bullish" },
+  { period:"4月中旬", event:"確定申告期限（資金流入）", type:"bullish" },
+  { period:"5月〜10月", event:"Sell in May 期間", type:"bearish" },
+  { period:"8月〜9月", event:"夏枯れ・調整局面", type:"bearish" },
+  { period:"11月下旬〜12月中旬", event:"タックスロス・セリング", type:"bearish" },
+  { period:"12月下旬", event:"サンタクロースラリー前半", type:"bullish" },
+  { period:"11月〜4月", event:"最高の6カ月", type:"bullish" },
+];
+
+// ── ゲージ描画ユーティリティ ──
+function findZone(value, zones) {
+  return zones.find(z => value >= z.from && value < z.to) || zones[zones.length - 1];
+}
+
+function renderGauge(label, value, description, min, max, zones) {
+  const zone = findZone(value, zones);
+  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+  const valStr = typeof value === 'number' ? value.toFixed(2) : value;
+
+  let zonesHtml = zones.map(z => {
+    const left = ((z.from - min) / (max - min)) * 100;
+    const width = ((z.to - z.from) / (max - min)) * 100;
+    return `<div class="gauge-zone" style="left:${left}%;width:${width}%;background:${z.color}"></div>`;
+  }).join('');
+
+  return `<div class="gauge-card">
+    <div class="gauge-label">${label}</div>
+    <div class="gauge-value-row">
+      <span class="gauge-value" style="color:${zone.color}">${valStr}</span>
+      <span class="gauge-status" style="color:${zone.color}">${zone.label}</span>
+    </div>
+    <div class="gauge-desc">${description}</div>
+    <div class="gauge-bar">
+      ${zonesHtml}
+      <div class="gauge-dot" style="left:${pct}%;background:${zone.color};box-shadow:0 0 8px ${zone.color}40"></div>
+    </div>
+    <div class="gauge-range"><span>${min}</span><span>${max}</span></div>
+  </div>`;
+}
+
+// ── 分析ロジック ──
+function analyze(d) {
+  const riskPremium = d.earningsYield - d.bond10y;
+  const month = new Date().getMonth();
+  const anomaly = ANOMALY[month];
+
+  let score = 0, reasons = [];
+
+  // 1. リスクプレミアム
+  if (riskPremium > 2) { score += 2; reasons.push("リスクプレミアムが十分（割安）"); }
+  else if (riskPremium > 0) { score += 1; reasons.push("リスクプレミアムはプラス（適正）"); }
+  else if (riskPremium > -1) { score -= 1; reasons.push("リスクプレミアムがマイナス圏（やや割高）"); }
+  else { score -= 2; reasons.push("リスクプレミアムが大幅マイナス（割高）"); }
+
+  // 2. PER
+  if (d.per < 15) { score += 2; reasons.push("PER15倍未満で歴史的に割安"); }
+  else if (d.per < 20) { score += 1; reasons.push("PERは適正水準"); }
+  else if (d.per < 25) { score -= 1; reasons.push("PERがやや割高"); }
+  else { score -= 2; reasons.push(`PER${d.per.toFixed(1)}倍はバブル水準に接近`); }
+
+  // 3. アノマリー
+  if (anomaly.winRate >= 65) { score += 1; reasons.push(`${anomaly.month}は歴史的に株高になりやすい（勝率${anomaly.winRate}%）`); }
+  else if (anomaly.winRate <= 50) { score -= 1; reasons.push(`${anomaly.month}は歴史的にパフォーマンスが悪い（勝率${anomaly.winRate}%）`); }
+
+  // 4. CPI
+  if (d.cpi <= 2.5) { score += 1; reasons.push("インフレは落ち着いており利下げ余地あり"); }
+  else if (d.cpi >= 3.5) { score -= 1; reasons.push("インフレが高止まりで利下げが遠のく"); }
+
+  // 5. ISMサービス業
+  if (d.ismSvc < 50) { score -= 1; reasons.push("ISMサービス業PMIが50割れ — 景気後退リスク"); }
+  else if (d.ismSvc > 55) { score += 1; reasons.push("ISMサービス業PMIが55超 — 景気は堅調"); }
+
+  // 6. 大統領サイクル（2025年 = 共和党トランプ任期1年目）
+  const year = new Date().getFullYear();
+  if (year === 2025 || year === 2026) {
+    score -= 1; reasons.push("大統領サイクル：共和党任期1年目は株安になりやすい");
+  }
+
+  let verdict, verdictColor;
+  if (score >= 3) { verdict = "強気"; verdictColor = "#22c55e"; }
+  else if (score >= 1) { verdict = "やや強気"; verdictColor = "#86efac"; }
+  else if (score >= -1) { verdict = "中立"; verdictColor = "#facc15"; }
+  else if (score >= -3) { verdict = "やや弱気"; verdictColor = "#fb923c"; }
+  else { verdict = "弱気"; verdictColor = "#ef4444"; }
+
+  return { score, verdict, verdictColor, reasons, riskPremium };
+}
+
+// ── data.json からデータを抽出 ──
+function extractData(json) {
+  // 米10年債利回り
+  const tnx = json.rates?.find(r => r.symbol === '^TNX');
+  const bond10y = tnx?.price ?? 4.25;
+
+  // 米30年債利回り
+  const tyx = json.rates?.find(r => r.symbol === '^TYX');
+  const bond30y = tyx?.price ?? 4.86;
+
+  // 米3ヶ月債（FFレートで代用）
+  const ff = json.rates?.find(r => r.tag === 'FEDFUNDS');
+  const fedRate = ff?.price ?? 4.33;
+
+  // 米2年債
+  const us2y = json.rates?.find(r => r.tag === 'US2Y');
+  const bond2y = us2y?.price ?? 3.73;
+
+  // S&P500
+  const sp = json.indices?.find(i => i.symbol === '^GSPC');
+  const sp500 = sp?.price ?? 5880;
+
+  // VIX
+  const vix = json.vix?.price ?? 18;
+
+  // PER
+  const perObj = json.sp500_pe;
+  const per = perObj?.price ?? 26.5;
+
+  // 益回り = 100 / PER
+  const earningsYield = per > 0 ? (100 / per) : 3.77;
+
+  // シラーPER（data.jsonにない場合は推定: 通常PERの約1.4倍）
+  const shillerPer = per * 1.43;
+
+  // ── マクロ指標: data.json の "macro" から自動取得 ──
+  const m = json.macro || {};
+  const getMacroVal = (tag, fallback) => {
+    const item = m[tag];
+    return (item && item.ok && item.value != null) ? item.value : fallback;
+  };
+
+  const cpi         = getMacroVal("CPI",      2.8);
+  const coreCpi     = getMacroVal("CORE_CPI", 3.1);
+  const pce         = getMacroVal("PCE",      2.8);
+  const unemployment= getMacroVal("UNRATE",   4.1);
+  const ismMfg      = getMacroVal("ISM_MFG",  50.0);
+  const ismSvc      = getMacroVal("ISM_SVC",  53.5);
+  const umcsent     = getMacroVal("UMCSENT",  65.0);
+  const jolts       = getMacroVal("JOLTS",    7500);
+
+  // マクロ指標のメタ情報（発表日・トレンド）も保持
+  const macroMeta = {};
+  for (const [tag, item] of Object.entries(m)) {
+    if (item && item.ok) {
+      macroMeta[tag] = {
+        date: item.date || "—",
+        trend: item.trend || "neu",
+        display: item.display || String(item.value),
+        note: item.note || "",
+        prev_value: item.prev_value,
+      };
+    }
+  }
+
+  return {
+    sp500, per, shillerPer, earningsYield,
+    bond10y, bond30y, bond2y, fedRate, vix,
+    cpi, coreCpi, pce, unemployment,
+    ismMfg, ismSvc, umcsent, jolts,
+    macroMeta,
+    // data.json に macro が存在するかどうか
+    hasMacroData: Object.keys(m).length > 0,
+  };
+}
+
+// ── メインレンダリング ──
+function render(json) {
+  const d = extractData(json);
+  const a = analyze(d);
+
+  // Updated time
+  document.getElementById('updatedAt').textContent = json.updated_jst || json.updated_at || '';
+
+  // Verdict banner
+  const banner = document.getElementById('verdictBanner');
+  banner.style.background = a.verdictColor + '10';
+  banner.style.border = `1px solid ${a.verdictColor}30`;
+  document.getElementById('verdictText').textContent = a.verdict;
+  document.getElementById('verdictText').style.color = a.verdictColor;
+  document.getElementById('verdictScore').textContent = `スコア: ${a.score > 0 ? '+' : ''}${a.score}`;
+  document.getElementById('verdictReasons').textContent = a.reasons.slice(0, 2).join(' / ');
+
+  // Build main content
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+
+  // ── Data source info ──
+  if (d.hasMacroData) {
+    main.innerHTML += `<div class="data-source" style="background:rgba(34,197,94,0.06);border-color:rgba(34,197,94,0.15)">
+      <div class="data-source-title" style="color:#22c55e">✓ 全指標自動取得中（FRED API連携済み）</div>
+      <div class="data-source-text">
+        市場データ（yfinance）+ マクロ経済指標（FRED API）の両方を <strong>data.json</strong> から自動読み込みしています。<br>
+        GitHub Actionsで毎日自動更新されます。ISMサービス業PMIのみFREDで取得できない場合があります。
+      </div>
+    </div>`;
+  } else {
+    main.innerHTML += `<div class="data-source">
+      <div class="data-source-title">データソース — FRED APIキー未設定</div>
+      <div class="data-source-text">
+        S&P500・米10年債利回り・VIX・PER等は自動取得済みです。<br>
+        マクロ指標（CPI・ISM・失業率等）を自動化するには、<a href="https://fredaccount.stlouisfed.org/apikeys" target="_blank" style="color:#f59e0b">FRED APIキー（無料）</a>を取得し、
+        GitHubの Settings → Secrets → <code>FRED_API_KEY</code> に登録してください。
+      </div>
+    </div>`;
+  }
+
+  // ── SECTION 01: バリュエーション ──
+  let s1 = `<div class="section">
+    <div class="sec-num">SECTION 01</div>
+    <div class="sec-title">バリュエーション判定 — 益回り vs 債券利回り</div>
+    <div class="sec-desc">
+      S&P500の益回り（PERの逆数）と米10年債利回りを比較し、リスクプレミアム（＝益回り－債券利回り）を算出します。
+      リスクプレミアムがマイナスなら「株より債券の方が魅力的」ということであり、バブルの警戒サインです。
+    </div>
+    <div class="grid-3">`;
+
+  s1 += renderGauge("リスクプレミアム", a.riskPremium,
+    `益回り${d.earningsYield.toFixed(2)}% − 10年債${d.bond10y.toFixed(2)}% = ${a.riskPremium.toFixed(2)}%`,
+    -4, 6, [
+      { from:-4, to:-1, label:"割高（バブル警戒）", color:"#ef4444" },
+      { from:-1, to:1, label:"やや割高", color:"#fb923c" },
+      { from:1, to:3, label:"適正", color:"#facc15" },
+      { from:3, to:6, label:"割安", color:"#22c55e" },
+    ]);
+
+  s1 += renderGauge("S&P500 PER（実績）", d.per,
+    "PER20倍が長期平均。25倍超はやや割高、30倍超はバブル警戒",
+    10, 40, [
+      { from:10, to:15, label:"割安", color:"#22c55e" },
+      { from:15, to:20, label:"適正", color:"#facc15" },
+      { from:20, to:25, label:"やや割高", color:"#fb923c" },
+      { from:25, to:40, label:"バブル警戒", color:"#ef4444" },
+    ]);
+
+  s1 += renderGauge("VIX（恐怖指数）", d.vix,
+    "20未満は安心。30超はパニック。65超は歴史的暴落レベル",
+    10, 50, [
+      { from:10, to:15, label:"極めて楽観", color:"#22c55e" },
+      { from:15, to:20, label:"安定", color:"#86efac" },
+      { from:20, to:30, label:"警戒", color:"#facc15" },
+      { from:30, to:50, label:"パニック", color:"#ef4444" },
+    ]);
+
+  s1 += `</div>`;
+
+  // Yield comparison bars
+  const bars = [
+    { label:"S&P500\n益回り", value:d.earningsYield, color:"#3b82f6" },
+    { label:"米10年債\n利回り", value:d.bond10y, color:"#f59e0b" },
+    { label:"米2年債\n利回り", value:d.bond2y, color:"#a78bfa" },
+    { label:"リスク\nプレミアム", value:a.riskPremium, color:a.riskPremium >= 0 ? "#22c55e" : "#ef4444" },
+  ];
+  const maxBar = 6;
+  s1 += `<div class="yield-chart">
+    <div class="yield-chart-label">利回り比較チャート — 「株 vs 債券、どちらが魅力的か？」</div>
+    <div class="yield-bars">`;
+  bars.forEach(b => {
+    const h = Math.max(8, (Math.abs(b.value) / maxBar) * 120);
+    const sign = b.value >= 0 ? '+' : '';
+    s1 += `<div class="yield-bar-item">
+      <div class="yield-bar-val" style="color:${b.color}">${sign}${b.value.toFixed(2)}%</div>
+      <div class="yield-bar-fill" style="height:${h}px;background:${b.color}30;border-top:3px solid ${b.color}"></div>
+      <div class="yield-bar-name">${b.label}</div>
+    </div>`;
+  });
+  s1 += `</div></div></div>`;
+  main.innerHTML += s1;
+
+  // ── SECTION 02: マクロ経済 ──
+  let s2 = `<div class="section">
+    <div class="sec-num">SECTION 02</div>
+    <div class="sec-title">マクロ経済指標 — FRBの次の一手を読む</div>
+    <div class="grid-3">`;
+
+  s2 += renderGauge("CPI（前年同月比）", d.cpi,
+    "FRBのインフレ目標は2%。2%に近づくほど利下げ余地が広がる",
+    0, 6, [
+      { from:0, to:2, label:"デフレ懸念", color:"#3b82f6" },
+      { from:2, to:2.5, label:"FRB目標圏内", color:"#22c55e" },
+      { from:2.5, to:3.5, label:"やや高い", color:"#facc15" },
+      { from:3.5, to:6, label:"インフレ警戒", color:"#ef4444" },
+    ]);
+
+  s2 += renderGauge("ISM製造業PMI", d.ismMfg,
+    "50が好不況の分かれ目。50を下回ると製造業は不況",
+    40, 65, [
+      { from:40, to:47, label:"深刻な不況", color:"#ef4444" },
+      { from:47, to:50, label:"不況", color:"#fb923c" },
+      { from:50, to:55, label:"緩やかな拡大", color:"#facc15" },
+      { from:55, to:65, label:"力強い拡大", color:"#22c55e" },
+    ]);
+
+  s2 += renderGauge("ISMサービス業PMI", d.ismSvc,
+    "米GDPの約7割がサービス業。50を下回ると景気後退の可能性大",
+    40, 65, [
+      { from:40, to:47, label:"深刻な不況", color:"#ef4444" },
+      { from:47, to:50, label:"不況", color:"#fb923c" },
+      { from:50, to:55, label:"緩やかな拡大", color:"#facc15" },
+      { from:55, to:65, label:"力強い拡大", color:"#22c55e" },
+    ]);
+
+  s2 += renderGauge("失業率", d.unemployment,
+    "直近3カ月平均が過去12カ月の最低値から0.5%以上上昇するとサーム・ルール発動",
+    3, 7, [
+      { from:3, to:4, label:"完全雇用に近い", color:"#22c55e" },
+      { from:4, to:4.5, label:"軽度の悪化", color:"#facc15" },
+      { from:4.5, to:5.5, label:"景気後退サイン", color:"#fb923c" },
+      { from:5.5, to:7, label:"景気後退", color:"#ef4444" },
+    ]);
+
+  s2 += renderGauge("FF金利（政策金利）", d.fedRate,
+    "FRBが景気をコントロールする最重要ツール",
+    0, 6, [
+      { from:0, to:1, label:"超緩和", color:"#3b82f6" },
+      { from:1, to:2.5, label:"緩和的", color:"#22c55e" },
+      { from:2.5, to:4, label:"中立", color:"#facc15" },
+      { from:4, to:6, label:"引き締め", color:"#ef4444" },
+    ]);
+
+  s2 += `</div></div>`;
+  main.innerHTML += s2;
+
+  // ── マクロ指標一覧テーブル ──
+  if (d.hasMacroData) {
+    const trendIcon = { up:'<span style="color:#22c55e">▲</span>', dn:'<span style="color:#ef4444">▼</span>', neu:'<span style="color:#6b7280">—</span>' };
+    const macroRows = [
+      { tag:"CPI",      label:"CPI（前年比）" },
+      { tag:"CORE_CPI", label:"コアCPI（前年比）" },
+      { tag:"PCE",      label:"PCEデフレーター" },
+      { tag:"UNRATE",   label:"失業率" },
+      { tag:"NFP",      label:"雇用者数（前月差）" },
+      { tag:"WAGE",     label:"平均時給（前年比）" },
+      { tag:"ISM_MFG",  label:"ISM製造業PMI" },
+      { tag:"ISM_SVC",  label:"ISMサービス業PMI" },
+      { tag:"UMCSENT",  label:"ミシガン消費者信頼感" },
+      { tag:"JOLTS",    label:"JOLTS求人件数" },
+    ];
+
+    let mtHtml = `<div class="section">
+      <div class="sec-num">SECTION 02b</div>
+      <div class="sec-title">マクロ指標一覧 — FRED APIから自動取得</div>
+      <div class="gauge-card" style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+            <th style="text-align:left;padding:8px 12px;color:#8a8f98;font-weight:600">指標</th>
+            <th style="text-align:right;padding:8px 12px;color:#8a8f98;font-weight:600">最新値</th>
+            <th style="text-align:right;padding:8px 12px;color:#8a8f98;font-weight:600">前回値</th>
+            <th style="text-align:center;padding:8px 12px;color:#8a8f98;font-weight:600">方向</th>
+            <th style="text-align:right;padding:8px 12px;color:#8a8f98;font-weight:600">発表月</th>
+            <th style="text-align:left;padding:8px 12px;color:#8a8f98;font-weight:600">備考</th>
+          </tr>
+        </thead><tbody>`;
+
+    macroRows.forEach(row => {
+      const meta = d.macroMeta[row.tag];
+      if (!meta) {
+        mtHtml += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+          <td style="padding:8px 12px">${row.label}</td>
+          <td style="text-align:right;padding:8px 12px;color:#555">—</td>
+          <td style="text-align:right;padding:8px 12px;color:#555">—</td>
+          <td style="text-align:center;padding:8px 12px">—</td>
+          <td style="text-align:right;padding:8px 12px;color:#555">—</td>
+          <td style="padding:8px 12px;color:#555;font-size:11px">データなし</td>
+        </tr>`;
+        return;
+      }
+      mtHtml += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+        <td style="padding:8px 12px;font-weight:500">${row.label}</td>
+        <td style="text-align:right;padding:8px 12px;font-family:var(--mono);font-weight:600;color:#e5e7eb">${meta.display}</td>
+        <td style="text-align:right;padding:8px 12px;font-family:var(--mono);color:#6b7280">${meta.prev_value != null ? meta.prev_value : '—'}</td>
+        <td style="text-align:center;padding:8px 12px">${trendIcon[meta.trend] || '—'}</td>
+        <td style="text-align:right;padding:8px 12px;color:#6b7280;font-size:12px">${meta.date}</td>
+        <td style="padding:8px 12px;color:#6b7280;font-size:11px">${meta.note}</td>
+      </tr>`;
+    });
+
+    mtHtml += `</tbody></table></div></div>`;
+    main.innerHTML += mtHtml;
+  }
+
+  // ── SECTION 03: アノマリー ──
+  const curMonth = new Date().getMonth();
+  let s3 = `<div class="section">
+    <div class="sec-num">SECTION 03</div>
+    <div class="sec-title">アノマリー — 市場の季節性を味方につける</div>
+    <div class="sec-desc">
+      経験の浅い未熟な投資家ほど「アノマリーは占い」と決めつけますが、人々の生活サイクルが一年の行事を中心に動いている以上、
+      規則性が生まれるのは必然です。1950年以降の75年間のデータに基づいています。
+    </div>`;
+
+  // Anomaly bar chart
+  const maxAnomaly = 2;
+  const zeroOffset = 80; // px from bottom for zero line
+  s3 += `<div class="anomaly-chart-wrap">
+    <div class="anomaly-chart-label">S&P500 月間平均騰落率（1950〜2024年）</div>
+    <div class="anomaly-bars" style="position:relative">
+      <div class="anomaly-zero" style="bottom:${zeroOffset}px"></div>`;
+
+  ANOMALY.forEach((m, i) => {
+    const isCur = i === curMonth;
+    const h = Math.max(2, (Math.abs(m.avg) / maxAnomaly) * 60);
+    const isPos = m.avg >= 0;
+    const color = isCur ? '#f59e0b' : (isPos ? '#22c55e' : '#ef4444');
+    const opacity = isCur ? '1' : '0.5';
+    const bottom = isPos ? zeroOffset : (zeroOffset - h);
+
+    s3 += `<div class="anomaly-bar">
+      <div class="anomaly-bar-fill" style="height:${h}px;background:${color};opacity:${opacity};position:absolute;bottom:${bottom}px;width:70%;">
+        <div class="anomaly-bar-val">${m.avg > 0 ? '+' : ''}${m.avg.toFixed(1)}%</div>
+      </div>
+      <div class="anomaly-bar-label" style="position:absolute;bottom:0;${isCur ? 'color:#f59e0b;font-weight:700' : ''}">${m.month}</div>
+    </div>`;
+  });
+
+  s3 += `</div>`;
+
+  if (ANOMALY[curMonth].note) {
+    s3 += `<div class="anomaly-note">📌 今月のポイント: ${ANOMALY[curMonth].note}</div>`;
+  }
+  s3 += `</div>`;
+
+  // Demand events
+  s3 += `<div class="anomaly-chart-wrap">
+    <div class="anomaly-chart-label">需給イベントカレンダー</div>
+    <div class="grid-2">`;
+
+  DEMAND_EVENTS.forEach(ev => {
+    const typeLabel = ev.type === 'bullish' ? '買い圧力' : '売り圧力';
+    const typeColor = ev.type === 'bullish' ? '#22c55e' : '#ef4444';
+    s3 += `<div class="demand-card ${ev.type}">
+      <div class="demand-type" style="color:${typeColor}">${typeLabel}</div>
+      <div>
+        <div class="demand-event">${ev.event}</div>
+        <div class="demand-period">${ev.period}</div>
+      </div>
+    </div>`;
+  });
+
+  s3 += `</div></div></div>`;
+  main.innerHTML += s3;
+
+  // ── SECTION 04: 判定理由 ──
+  let s4 = `<div class="section">
+    <div class="sec-num">SECTION 04</div>
+    <div class="sec-title">判定理由の詳細</div>
+    <div class="gauge-card">`;
+
+  a.reasons.forEach((r, i) => {
+    s4 += `<div class="reason-item">
+      <div class="reason-num">${i + 1}</div>
+      <div class="reason-text">${r}</div>
+    </div>`;
+  });
+
+  s4 += `</div></div>`;
+  main.innerHTML += s4;
+
+  // ── Footer ──
+  main.innerHTML += `<div class="footer">
+    <div>本ダッシュボードはバフェット太郎の分析手法を参考に構築されたものであり、投資助言ではありません。</div>
+    <div>投資判断は必ずご自身の責任で行ってください。</div>
+    <div class="footer-highlight">data.json → 関係性の可視化 → 判定 の3ステップで市場を読み解く</div>
+  </div>`;
+}
+
+// ── ロード ──
+async function load() {
+  try {
+    const r = await fetch('data.json?t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    render(await r.json());
+  } catch (e) {
+    console.error(e);
+    document.getElementById('mainContent').innerHTML =
+      '<div style="text-align:center;padding:60px 20px;color:#ef4444">⚠ data.json の読み込みに失敗しました。<br>GitHub Actions → "Update Market Data" を実行してください。</div>';
+  }
+}
+
+load();
+</script>
+</body>
+</html>

@@ -222,6 +222,7 @@ footer{
   <div class="tab" data-t="comm">コモディティ</div>
   <div class="tab" data-t="cry">暗号資産</div>
   <div class="tab" data-t="mac">マクロ指標</div>
+  <a href="analysis.html" class="tab" style="color:#f59e0b;text-decoration:none;border-bottom-color:#f59e0b">📊 BT分析</a>
 </nav>
 
 <main>
@@ -270,21 +271,44 @@ footer{
 <footer>yfinance + 財務省国債金利情報 + GitHub Actions で自動取得 — マクロ指標は手動更新</footer>
 
 <script>
-/* ── MACRO (手動更新) ───────────────────────── */
+/* ── MACRO (手動更新 → data.json のmacroがあれば自動上書き) ── */
 const MACRO=[
-  {key:'CPI', name:'CPI（前年比）',           val:'+2.8%', sub:'2026年2月',      trend:'dn', note:'コアCPI +3.1%'},
-  {key:'PCE', name:'PCEデフレーター',          val:'+2.8%', sub:'2026年2月',      trend:'up', note:'コアPCE +2.8%'},
-  {key:'NFP', name:'非農業部門雇用者数',       val:'+151K', sub:'2026年2月',      trend:'dn', note:'予想160K'},
-  {key:'UNE', name:'失業率',                   val:'4.1%',  sub:'2026年2月',      trend:'neu',note:'サームルール 0.27'},
-  {key:'WAGE',name:'平均時給（前年比）',        val:'+4.0%', sub:'2026年2月',      trend:'neu',note:''},
+  {key:'CPI', name:'CPI（前年比）',           val:'+2.8%', sub:'2026年2月',      trend:'dn', note:'コアCPI +3.1%',  fredTag:'CPI'},
+  {key:'PCE', name:'PCEデフレーター',          val:'+2.8%', sub:'2026年2月',      trend:'up', note:'コアPCE +2.8%',  fredTag:'PCE'},
+  {key:'NFP', name:'非農業部門雇用者数',       val:'+151K', sub:'2026年2月',      trend:'dn', note:'予想160K',       fredTag:'NFP'},
+  {key:'UNE', name:'失業率',                   val:'4.1%',  sub:'2026年2月',      trend:'neu',note:'サームルール 0.27',fredTag:'UNRATE'},
+  {key:'WAGE',name:'平均時給（前年比）',        val:'+4.0%', sub:'2026年2月',      trend:'neu',note:'',               fredTag:'WAGE'},
   {key:'GDP', name:'GDP成長率（Q4改定値）',    val:'+0.7%', sub:'2025年Q4',       trend:'dn', note:'速報+1.4%から大幅下方修正'},
-  {key:'ISM', name:'ISM製造業PMI',             val:'52.4',  sub:'2026年2月',      trend:'up', note:'50以上＝拡張圏'},
-  {key:'ISMs',name:'ISM非製造業PMI',           val:'53.5',  sub:'2026年2月',      trend:'up', note:'50以上＝拡張圏'},
-  {key:'CSI', name:'消費者信頼感（ミシガン）', val:'55.5',  sub:'2026年3月',      trend:'dn', note:'長期期待インフレ 3.2%'},
-  {key:'JLT', name:'JOLTS求人件数',            val:'774万', sub:'2026年1月',      trend:'dn', note:'離職率 2.0%'},
+  {key:'ISM', name:'ISM製造業PMI',             val:'52.4',  sub:'2026年2月',      trend:'up', note:'50以上＝拡張圏', fredTag:'ISM_MFG'},
+  {key:'ISMs',name:'ISM非製造業PMI',           val:'53.5',  sub:'2026年2月',      trend:'up', note:'50以上＝拡張圏', fredTag:'ISM_SVC'},
+  {key:'CSI', name:'消費者信頼感（ミシガン）', val:'55.5',  sub:'2026年3月',      trend:'dn', note:'長期期待インフレ 3.2%',fredTag:'UMCSENT'},
+  {key:'JLT', name:'JOLTS求人件数',            val:'774万', sub:'2026年1月',      trend:'dn', note:'離職率 2.0%',    fredTag:'JOLTS'},
   {key:'ADP', name:'ADP雇用者数',              val:'+63K',  sub:'2026年2月',      trend:'up', note:'予想48K'},
   {key:'OIL', name:'WTI原油（参考）',          val:'$98.71',sub:'2026年3月14日',  trend:'up', note:'イラン情勢で急騰'},
 ];
+
+// data.jsonのmacroフィールドがあればMACRO配列を自動上書きする関数
+function updateMacroFromJson(macroData) {
+  if (!macroData || typeof macroData !== 'object') return;
+  MACRO.forEach(item => {
+    if (!item.fredTag) return;
+    const fred = macroData[item.fredTag];
+    if (!fred || !fred.ok) return;
+    // 値を上書き
+    if (fred.display) item.val = fred.display;
+    if (fred.date) {
+      // "2026-02" → "2026年2月" に変換
+      const parts = fred.date.split('-');
+      if (parts.length === 2) {
+        item.sub = `${parts[0]}年${parseInt(parts[1])}月`;
+      } else {
+        item.sub = fred.date;
+      }
+    }
+    if (fred.trend) item.trend = fred.trend;
+    if (fred.note) item.note = fred.note;
+  });
+}
 
 /* ── TABS ───────────────────────────────────── */
 const TAB_MAP={all:null,idx:'sec-idx',tech:'sec-tech',rate:'sec-rate',fx:'sec-fx',comm:'sec-comm',cry:'sec-cry',mac:'sec-mac'};
@@ -375,6 +399,9 @@ function macroTable(items){
 function renderAll(d){
   sparkQ=[];
   document.getElementById('upd').textContent=(d.updated_jst||d.updated_at||'').replace(/\s*JST\s*/g,'');
+
+  // data.jsonにmacroフィールドがあれば、MACRO配列を自動上書き
+  if(d.macro) updateMacroFromJson(d.macro);
 
   // Indices + VIX
   const vix=d.vix;let ih='',di=0;
