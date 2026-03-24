@@ -65,17 +65,17 @@ a:hover { text-decoration:underline; }
   border:2px solid var(--border);
   display:flex; align-items:stretch; gap:24px;
 }
-.verdict-left { flex-shrink:0; min-width:180px; display:flex; flex-direction:column; justify-content:center; }
-.verdict-label { font-size:12px; color:var(--t3); letter-spacing:1px; text-transform:uppercase; font-weight:700; }
-.verdict-value { font-size:36px; font-weight:700; margin-top:2px; }
-.verdict-score { font-size:14px; color:var(--t2); font-weight:700; margin-top:2px; }
-.verdict-summary { font-size:13px; color:var(--t2); font-weight:700; margin-top:6px; }
-.verdict-right { flex:1; border-left:1px solid var(--border); padding-left:24px; display:flex; flex-direction:column; gap:5px; justify-content:center; }
+.verdict-left { flex-shrink:0; min-width:200px; display:flex; flex-direction:column; justify-content:center; }
+.verdict-label { font-size:13px; color:var(--t3); letter-spacing:1px; text-transform:uppercase; font-weight:700; }
+.verdict-value { font-size:40px; font-weight:700; margin-top:2px; }
+.verdict-score { font-size:15px; color:var(--t2); font-weight:700; margin-top:4px; }
+.verdict-summary { font-size:15px; color:var(--t2); font-weight:700; margin-top:6px; }
+.verdict-right { flex:1; border-left:1px solid var(--border); padding-left:24px; display:flex; flex-direction:column; gap:6px; justify-content:center; }
 .verdict-reason {
   display:flex; align-items:flex-start; gap:8px;
-  font-size:13px; line-height:1.5; font-weight:600;
+  font-size:15px; line-height:1.6; font-weight:600;
 }
-.verdict-reason-icon { flex-shrink:0; font-size:11px; margin-top:2px; }
+.verdict-reason-icon { flex-shrink:0; font-size:13px; margin-top:3px; }
 .verdict-reason-icon.bullish { color:#16a34a; }
 .verdict-reason-icon.bearish { color:#dc2626; }
 .verdict-reason-text { color:var(--tx); }
@@ -666,11 +666,11 @@ function render(json) {
   s1 += `</div></div></div>`;
   main.innerHTML += s1;
 
-  // ── SECTION 01b: テクニカル — 移動平均線 ──
+  // ── SECTION 02: テクニカル — 移動平均線 ──
   if (d.hasMA) {
     const MA_ORDER = ['^GSPC', '^IXIC', '^DJI'];
     let s1b = `<div class="section">
-      <div class="sec-num">SECTION 01b</div>
+      <div class="sec-num">SECTION 02</div>
       <div class="sec-title">テクニカル判定 — 移動平均線で相場の体温を測る</div>
       <div class="sec-desc">
         50日移動平均線は短期トレンド、200日移動平均線は長期トレンドを示します。
@@ -750,9 +750,9 @@ function render(json) {
     });
   }
 
-  // ── SECTION 02: マクロ経済 ──
+  // ── SECTION 03: マクロ経済 ──
   let s2 = `<div class="section">
-    <div class="sec-num">SECTION 02</div>
+    <div class="sec-num">SECTION 03</div>
     <div class="sec-title">マクロ経済指標 — FRBの次の一手を読む</div>
     <div class="grid-3">`;
 
@@ -821,9 +821,8 @@ function render(json) {
       { tag:"JOLTS",    label:"JOLTS求人件数" },
     ];
 
-    let mtHtml = `<div class="section">
-      <div class="sec-num">SECTION 02b</div>
-      <div class="sec-title">マクロ指標一覧 — FRED APIから自動取得</div>
+    let mtHtml = `<div style="margin-top:24px">
+      <div class="sec-title" style="font-size:17px;margin-bottom:12px">マクロ指標一覧 — FRED APIから自動取得</div>
       <div class="gauge-card" style="overflow-x:auto">
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead>
@@ -876,10 +875,10 @@ function render(json) {
     main.innerHTML += mtHtml;
   }
 
-  // ── SECTION 03: アノマリー ──
+  // ── SECTION 04: アノマリー ──
   const curMonth = new Date().getMonth();
   let s3 = `<div class="section">
-    <div class="sec-num">SECTION 03</div>
+    <div class="sec-num">SECTION 04</div>
     <div class="sec-title">アノマリー — 市場の季節性を味方につける</div>
     <div class="sec-desc">
       経験の浅い未熟な投資家ほど「アノマリーは占い」と決めつけますが、人々の生活サイクルが一年の行事を中心に動いている以上、
