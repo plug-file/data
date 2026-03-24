@@ -189,6 +189,36 @@ a:hover { text-decoration:underline; }
 }
 .footer-highlight { color:var(--t2); margin-top:8px; font-weight:700; }
 
+/* Moving Average Cards */
+.ma-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:20px 22px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.ma-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.ma-card-name { font-size:15px; font-weight:700; color:var(--tx); }
+.ma-card-price { font-size:22px; font-weight:700; font-family:var(--mono); color:var(--tx); }
+.ma-card-from-high { font-size:12px; color:var(--t3); font-weight:600; margin-top:2px; }
+.ma-signals { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.ma-signal {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 10px; border-radius:6px;
+  font-size:12px; font-weight:700;
+}
+.ma-signal.above { background:#dcfce7; color:#16a34a; }
+.ma-signal.below { background:#fef2f2; color:#dc2626; }
+.ma-signal.golden { background:#fef3c7; color:#b45309; }
+.ma-signal.dead { background:#fce7f3; color:#be123c; }
+.ma-chart-wrap { position:relative; height:110px; margin-top:8px; }
+.ma-chart-wrap canvas { width:100% !important; height:100% !important; }
+.ma-legend { display:flex; gap:14px; margin-top:8px; flex-wrap:wrap; }
+.ma-legend-item { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--t3); font-weight:600; }
+.ma-legend-line { width:16px; height:3px; border-radius:1px; }
+.ma-dev-row { display:flex; gap:12px; margin-top:10px; }
+.ma-dev-item { flex:1; background:var(--bg); border-radius:8px; padding:8px 10px; text-align:center; }
+.ma-dev-label { font-size:11px; color:var(--t3); font-weight:600; }
+.ma-dev-val { font-size:16px; font-weight:700; font-family:var(--mono); margin-top:2px; }
+
 /* Loading */
 .loading { text-align:center; padding:60px 20px; color:var(--t3); font-weight:700; font-size:15px; }
 .loading-spinner {
@@ -359,6 +389,25 @@ function analyze(d) {
     score -= 1; reasons.push("大統領サイクル：共和党任期1年目は株安になりやすい");
   }
 
+  // 7. 移動平均線（S&P500ベース）
+  const spMA = d.ma && d.ma['^GSPC'];
+  if (spMA && spMA.ok) {
+    if (spMA.ma50_dev != null) {
+      if (spMA.ma50_dev > 0 && spMA.ma200_dev != null && spMA.ma200_dev > 0) {
+        score += 1; reasons.push("S&P500は50日線・200日線をともに上回る（上昇トレンド）");
+      } else if (spMA.ma50_dev < 0 && spMA.ma200_dev != null && spMA.ma200_dev < 0) {
+        score -= 1; reasons.push("S&P500は50日線・200日線をともに下回る（下降トレンド）");
+      } else if (spMA.ma50_dev < 0) {
+        score -= 1; reasons.push("S&P500は50日移動平均線を下回る（短期弱気）");
+      }
+    }
+    if (spMA.cross === 'dead') {
+      score -= 1; reasons.push("S&P500でデッドクロス発生（50日線が200日線を下抜け）");
+    } else if (spMA.cross === 'golden') {
+      score += 1; reasons.push("S&P500でゴールデンクロス発生（50日線が200日線を上抜け）");
+    }
+  }
+
   let verdict, verdictColor;
   if (score >= 3) { verdict = "強気"; verdictColor = "#22c55e"; }
   else if (score >= 1) { verdict = "やや強気"; verdictColor = "#86efac"; }
@@ -438,12 +487,16 @@ function extractData(json) {
     }
   }
 
+  // ── 移動平均線データ ──
+  const ma = json.moving_averages || {};
+  const hasMA = Object.keys(ma).length > 0 && Object.values(ma).some(v => v.ok);
+
   return {
     sp500, per, shillerPer, hasCape, earningsYield,
     bond10y, bond30y, bond2y, fedRate, vix,
     cpi, coreCpi, pce, unemployment,
     ismMfg, ismSvc, umcsent, jolts,
-    macroMeta,
+    macroMeta, ma, hasMA,
     // data.json に macro が存在するかどうか
     hasMacroData: Object.keys(m).length > 0,
   };
@@ -568,6 +621,90 @@ function render(json) {
   });
   s1 += `</div></div></div>`;
   main.innerHTML += s1;
+
+  // ── SECTION 01b: テクニカル — 移動平均線 ──
+  if (d.hasMA) {
+    const MA_ORDER = ['^GSPC', '^IXIC', '^DJI'];
+    let s1b = `<div class="section">
+      <div class="sec-num">SECTION 01b</div>
+      <div class="sec-title">テクニカル判定 — 移動平均線で相場の体温を測る</div>
+      <div class="sec-desc">
+        50日移動平均線は短期トレンド、200日移動平均線は長期トレンドを示します。
+        株価がこれらを上回っていれば上昇トレンド、下回っていれば下降トレンドのサインです。
+        50日線が200日線を上抜ければゴールデンクロス（強気）、下抜ければデッドクロス（弱気）です。
+      </div>
+      <div class="grid-3">`;
+
+    MA_ORDER.forEach((sym, idx) => {
+      const item = d.ma[sym];
+      if (!item || !item.ok) return;
+
+      // シグナルバッジ
+      let signals = '';
+      if (item.ma50_dev != null) {
+        const cls50 = item.ma50_dev >= 0 ? 'above' : 'below';
+        const lbl50 = item.ma50_dev >= 0 ? '50日線 上回る' : '50日線 下回る';
+        signals += `<span class="ma-signal ${cls50}">${lbl50}</span>`;
+      }
+      if (item.ma200_dev != null) {
+        const cls200 = item.ma200_dev >= 0 ? 'above' : 'below';
+        const lbl200 = item.ma200_dev >= 0 ? '200日線 上回る' : '200日線 下回る';
+        signals += `<span class="ma-signal ${cls200}">${lbl200}</span>`;
+      }
+      if (item.cross === 'golden') {
+        signals += `<span class="ma-signal golden">⚡ ゴールデンクロス</span>`;
+      } else if (item.cross === 'dead') {
+        signals += `<span class="ma-signal dead">💀 デッドクロス</span>`;
+      }
+
+      // 乖離率表示
+      const dev50Color = item.ma50_dev != null ? (item.ma50_dev >= 0 ? '#16a34a' : '#dc2626') : '#999';
+      const dev200Color = item.ma200_dev != null ? (item.ma200_dev >= 0 ? '#16a34a' : '#dc2626') : '#999';
+      const dev50Str = item.ma50_dev != null ? `${item.ma50_dev > 0 ? '+' : ''}${item.ma50_dev}%` : '—';
+      const dev200Str = item.ma200_dev != null ? `${item.ma200_dev > 0 ? '+' : ''}${item.ma200_dev}%` : '—';
+
+      s1b += `<div class="ma-card">
+        <div class="ma-card-header">
+          <div>
+            <div class="ma-card-name">${item.name}</div>
+            <div class="ma-card-from-high">${item.from_high != null ? '52週高値比 ' + item.from_high + '%' : ''}</div>
+          </div>
+          <div class="ma-card-price">${item.price?.toLocaleString()}</div>
+        </div>
+        <div class="ma-signals">${signals}</div>
+        <div class="ma-chart-wrap"><canvas id="maChart${idx}"></canvas></div>
+        <div class="ma-legend">
+          <div class="ma-legend-item"><div class="ma-legend-line" style="background:#1a1a1a"></div>終値</div>
+          <div class="ma-legend-item"><div class="ma-legend-line" style="background:#f59e0b"></div>50日線</div>
+          <div class="ma-legend-item"><div class="ma-legend-line" style="background:#3b82f6"></div>200日線</div>
+        </div>
+        <div class="ma-dev-row">
+          <div class="ma-dev-item">
+            <div class="ma-dev-label">50日線 乖離率</div>
+            <div class="ma-dev-val" style="color:${dev50Color}">${dev50Str}</div>
+          </div>
+          <div class="ma-dev-item">
+            <div class="ma-dev-label">200日線 乖離率</div>
+            <div class="ma-dev-val" style="color:${dev200Color}">${dev200Str}</div>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    s1b += `</div></div>`;
+    main.innerHTML += s1b;
+
+    // ミニチャート描画
+    requestAnimationFrame(() => {
+      MA_ORDER.forEach((sym, idx) => {
+        const item = d.ma[sym];
+        if (!item || !item.ok) return;
+        const canvas = document.getElementById('maChart' + idx);
+        if (!canvas) return;
+        drawMAChart(canvas, item);
+      });
+    });
+  }
 
   // ── SECTION 02: マクロ経済 ──
   let s2 = `<div class="section">
@@ -778,6 +915,66 @@ function render(json) {
     <div>投資判断は必ずご自身の責任で行ってください。</div>
     <div class="footer-highlight">data.json → 関係性の可視化 → 判定 の3ステップで市場を読み解く</div>
   </div>`;
+}
+
+// ── 移動平均線ミニチャート描画 ──
+function drawMAChart(canvas, item) {
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.height;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+
+  const closes = item.chart_closes || [];
+  const ma50 = item.chart_ma50 || [];
+  const ma200 = item.chart_ma200 || [];
+  if (closes.length < 2) return;
+
+  // 全データからmin/maxを計算
+  const allVals = [...closes, ...ma50.filter(v => v != null), ...ma200.filter(v => v != null)];
+  const minVal = Math.min(...allVals);
+  const maxVal = Math.max(...allVals);
+  const range = maxVal - minVal || 1;
+  const pad = 6;
+
+  const toX = (i) => (i / (closes.length - 1)) * (w - pad * 2) + pad;
+  const toY = (v) => h - pad - ((v - minVal) / range) * (h - pad * 2);
+
+  function drawLine(data, color, lineWidth, dash) {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.setLineDash(dash || []);
+    let started = false;
+    data.forEach((v, i) => {
+      if (v == null) return;
+      const x = toX(i), y = toY(v);
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // 200日線（青・破線）
+  drawLine(ma200, '#3b82f6', 1.5, [4, 3]);
+  // 50日線（オレンジ・破線）
+  drawLine(ma50, '#f59e0b', 1.5, [4, 3]);
+  // 終値（黒・実線）
+  drawLine(closes, '#1a1a1a', 2);
+
+  // 最新値にドット
+  const lastX = toX(closes.length - 1);
+  const lastY = toY(closes[closes.length - 1]);
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fill();
 }
 
 // ── ロード ──
