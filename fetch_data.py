@@ -260,6 +260,74 @@ def fetch_sp500_per() -> dict:
         return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
 
 
+def fetch_shiller_cape() -> dict:
+    """
+    シラーPER（CAPE: Cyclically Adjusted PE Ratio）を取得する。
+    バフェット太郎がバリュエーション判定で重視する指標。
+    実績PERとは水準が大きく異なる（例: 実績PER 26倍 → シラーPER 37倍）。
+
+    取得ソース（フォールバック付き）:
+      1. multpl.com スクレイピング（最も高頻度に更新）
+      2. posix4e Shiller API（JSON、週次更新）
+      3. Yale大学公式Excelファイル（月次、最も権威あるソース）
+    """
+    print(f"  Fetching Shiller CAPE (P/E 10) ...")
+    meta = {"symbol": "SHILLER_CAPE", "name": "シラーPER（CAPE）", "tag": "SHILLER_CAPE"}
+
+    # --- 方法1: multpl.com ---
+    try:
+        url = "https://www.multpl.com/shiller-pe"
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; MarketDashboard/1.0)"}
+        r = requests.get(url, timeout=15, headers=headers)
+        r.raise_for_status()
+
+        # "Current Shiller PE Ratio is XX.XX" パターンを探す
+        match = re.search(r'Current\s+Shiller\s+PE\s+Ratio.*?<b[^>]*>([\d.]+)', r.text, re.IGNORECASE | re.DOTALL)
+        if not match:
+            # 別パターン: id="current" 内の数値
+            match = re.search(r'id="current"[^>]*>[\s\S]*?([\d]+\.[\d]+)', r.text)
+        if match:
+            cape = round(float(match.group(1)), 2)
+            print(f"    ✓ multpl.com: {cape}")
+            return {**meta, "ok": True, "price": cape}
+        else:
+            print(f"    ⚠ multpl.com: パース失敗")
+    except Exception as e:
+        print(f"    ⚠ multpl.com: {e}")
+
+    # --- 方法2: posix4e Shiller API ---
+    try:
+        url = "https://posix4e.github.io/shiller_wrapper_data/data/latest.json"
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
+        data = r.json()
+        cape = round(data["stock_market"]["cape"], 2)
+        print(f"    ✓ Shiller API: {cape}")
+        return {**meta, "ok": True, "price": cape}
+    except Exception as e:
+        print(f"    ⚠ Shiller API: {e}")
+
+    # --- 方法3: multpl.com テーブルページ（月次データ） ---
+    try:
+        url = "https://www.multpl.com/shiller-pe/table/by-month"
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; MarketDashboard/1.0)"}
+        r = requests.get(url, timeout=15, headers=headers)
+        r.raise_for_status()
+        rows = re.findall(
+            r'<tr>\s*<td[^>]*>([\w ,]+\d{4})</td>\s*<td[^>]*>([\d.]+)</td>',
+            r.text
+        )
+        if rows:
+            cape = round(float(rows[0][1]), 2)
+            print(f"    ✓ multpl.com table: {cape}")
+            return {**meta, "ok": True, "price": cape}
+    except Exception as e:
+        print(f"    ⚠ multpl.com table: {e}")
+
+    print(f"    ✗ 全ソース失敗")
+    return {**meta, "ok": False, "price": None}
+
+
 def fetch_mof_jgb_yields() -> list:
     """
     財務省の国債金利情報CSV（日次更新）から日本10年債・30年債の利回りを取得する。
@@ -696,6 +764,13 @@ def main():
     output["sp500_pe"] = pe
     status = "✓" if pe["ok"] else "✗"
     print(f"  {status} {pe['symbol']}: {pe.get('price')}")
+
+    # シラーPER（CAPE）→ output["shiller_cape"] に追加
+    print("\n[shiller_cape]")
+    cape = fetch_shiller_cape()
+    output["shiller_cape"] = cape
+    status = "✓" if cape["ok"] else "✗"
+    print(f"  {status} {cape['symbol']}: {cape.get('price')}")
 
     # FRED API: マクロ経済指標 → output["macro"] に追加
     fred_api_key = os.environ.get("FRED_API_KEY")
