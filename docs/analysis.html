@@ -60,16 +60,27 @@ a:hover { text-decoration:underline; }
 
 /* Verdict Banner */
 .verdict-banner {
-  margin-top:16px; padding:18px 22px; border-radius:12px;
+  max-width:960px; margin:16px auto 0; padding:20px 24px; border-radius:12px;
   background:var(--white);
   border:2px solid var(--border);
+  display:flex; align-items:stretch; gap:24px;
 }
-.verdict-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
-.verdict-label { font-size:13px; color:var(--t3); letter-spacing:1px; text-transform:uppercase; font-weight:700; }
-.verdict-value { font-size:32px; font-weight:700; margin-top:4px; }
-.verdict-score { font-size:15px; color:var(--t2); margin-left:10px; font-weight:700; }
-.verdict-summary { font-size:14px; color:var(--t2); max-width:400px; line-height:1.7; font-weight:600; text-align:right; }
-.verdict-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+.verdict-left { flex-shrink:0; min-width:180px; display:flex; flex-direction:column; justify-content:center; }
+.verdict-label { font-size:12px; color:var(--t3); letter-spacing:1px; text-transform:uppercase; font-weight:700; }
+.verdict-value { font-size:36px; font-weight:700; margin-top:2px; }
+.verdict-score { font-size:14px; color:var(--t2); font-weight:700; margin-top:2px; }
+.verdict-summary { font-size:13px; color:var(--t2); font-weight:700; margin-top:6px; }
+.verdict-right { flex:1; border-left:1px solid var(--border); padding-left:24px; display:flex; flex-direction:column; gap:5px; justify-content:center; }
+.verdict-reason {
+  display:flex; align-items:flex-start; gap:8px;
+  font-size:13px; line-height:1.5; font-weight:600;
+}
+.verdict-reason-icon { flex-shrink:0; font-size:11px; margin-top:2px; }
+.verdict-reason-icon.bullish { color:#16a34a; }
+.verdict-reason-icon.bearish { color:#dc2626; }
+.verdict-reason-text { color:var(--tx); }
+
+/* Verdict tag (kept for fallback) */
 .verdict-tag {
   display:inline-flex; align-items:center; gap:4px;
   padding:4px 10px; border-radius:6px;
@@ -77,7 +88,6 @@ a:hover { text-decoration:underline; }
 }
 .verdict-tag.bullish { background:#dcfce7; color:#15803d; }
 .verdict-tag.bearish { background:#fef2f2; color:#dc2626; }
-.verdict-tag.neutral { background:#f5f5f4; color:#78716c; }
 
 /* Updated time */
 .updated-time {
@@ -242,9 +252,12 @@ a:hover { text-decoration:underline; }
   .header { padding:12px 16px; }
   .header-inner { flex-direction:column; align-items:flex-start; gap:8px; }
   .header-right { width:100%; justify-content:space-between; }
+  .verdict-banner { flex-direction:column; gap:14px; }
+  .verdict-left { min-width:auto; }
+  .verdict-right { border-left:none; padding-left:0; border-top:1px solid var(--border); padding-top:14px; }
   .main { padding:16px 16px 48px; }
   .header-title { font-size:16px; }
-  .verdict-value { font-size:26px; }
+  .verdict-value { font-size:28px; }
   .gauge-value { font-size:28px; }
   .yield-bar-val { font-size:16px; }
   .grid-3 { grid-template-columns:1fr; }
@@ -269,21 +282,18 @@ a:hover { text-decoration:underline; }
       <div class="nav-back"><a href="index.html">← マーケットインフォ</a></div>
     </div>
   </div>
+</div>
 
-    <!-- Verdict Banner (JS fills) -->
-    <div class="verdict-banner" id="verdictBanner">
-      <div class="verdict-top">
-        <div>
-          <div class="verdict-label">バフェット太郎の総合判定</div>
-          <div style="display:flex;align-items:baseline;gap:10px;margin-top:4px">
-            <span class="verdict-value" id="verdictText">—</span>
-            <span class="verdict-score" id="verdictScore"></span>
-          </div>
-        </div>
-        <div class="verdict-summary" id="verdictSummary"></div>
-      </div>
-      <div class="verdict-tags" id="verdictTags"></div>
+<!-- Verdict Banner -->
+<div style="padding:0 24px">
+  <div class="verdict-banner" id="verdictBanner">
+    <div class="verdict-left">
+      <div class="verdict-label">バフェット太郎の総合判定</div>
+      <span class="verdict-value" id="verdictText">—</span>
+      <div class="verdict-score" id="verdictScore"></div>
+      <div class="verdict-summary" id="verdictSummary"></div>
     </div>
+    <div class="verdict-right" id="verdictReasons"></div>
   </div>
 </div>
 
@@ -543,11 +553,14 @@ function render(json) {
   document.getElementById('verdictSummary').innerHTML =
     `<span style="color:#16a34a">強気 ${bullCount}</span> / <span style="color:#dc2626">弱気 ${bearCount}</span>`;
 
-  // 判定理由タグ
-  const tagsEl = document.getElementById('verdictTags');
-  tagsEl.innerHTML = a.reasons.map(r => {
+  // 判定理由（右側に一覧表示）
+  const reasonsEl = document.getElementById('verdictReasons');
+  reasonsEl.innerHTML = a.reasons.map(r => {
     const icon = r.type === 'bullish' ? '▲' : '▼';
-    return `<span class="verdict-tag ${r.type}">${icon} ${r.text}</span>`;
+    return `<div class="verdict-reason">
+      <span class="verdict-reason-icon ${r.type}">${icon}</span>
+      <span class="verdict-reason-text">${r.text}</span>
+    </div>`;
   }).join('');
 
   // Build main content
