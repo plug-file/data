@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>バフェット太郎の投資判断ダッシュボード — Part 2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #e9e9e9;
+  --white: #ffffff;
+  --card: #ffffff;
+  --border: #e0e0db;
+  --border2: #d0d0cb;
+  --tx: #1a1a1a;
+  --t2: #444444;
+  --t3: #777777;
+  --t4: #999999;
+  --amber: #b45309;
+  --amber-bg: #fef3c7;
+  --amber-bd: #fde68a;
+  --green: #16a34a;
+  --green-bg: #dcfce7;
+  --green-bd: #bbf7d0;
+  --yellow: #a16207;
+  --orange: #c2410c;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --blue: #2563eb;
+  --blue-bg: #eff6ff;
+  --purple: #7c3aed;
+  --gold: #d4a017;
+  --gold-bg: #fdf6e3;
+  --gold-bd: #f0d88a;
+  --btc-orange: #f7931a;
+  --btc-bg: #fff8f0;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', 'Noto Sans JP', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); background:var(--bg); color:var(--tx); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; font-weight:600; }
+a { color:var(--amber); text-decoration:none; font-weight:700; }
+a:hover { text-decoration:underline; }
+
+/* Header */
+.header {
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:14px 24px;
+}
+.header-inner { max-width:960px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.header-left { display:flex; align-items:center; gap:12px; }
+.logo-icon {
+  width:36px; height:36px; border-radius:8px;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:700; color:#fff; font-family:var(--mono);
+  flex-shrink:0;
+}
+.header-title { font-size:18px; font-weight:700; letter-spacing:-0.5px; color:var(--tx); }
+.header-sub { font-size:12px; color:var(--t3); margin-top:1px; font-weight:600; }
+.header-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.nav-back { font-size:13px; color:var(--t3); font-weight:600; }
+.nav-back a { color:var(--amber); }
+
+/* Updated time */
+.updated-time {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--mono); font-size:11px; color:var(--t3);
+  background:var(--bg); border:1px solid var(--border);
+  padding:4px 10px; border-radius:6px; font-weight:600; white-space:nowrap;
+}
+.live-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* Main */
+.main { max-width:960px; margin:0 auto; padding:24px 24px 60px; }
+
+/* Section */
+.sec-num { font-size:15px; font-weight:700; color:var(--amber); letter-spacing:0.5px; margin-bottom:4px; }
+.sec-title { font-size:20px; font-weight:700; margin-bottom:8px; color:var(--tx); }
+.sec-desc { font-size:15px; color:var(--t2); margin-bottom:20px; line-height:1.8; max-width:720px; font-weight:600; }
+.section { margin-bottom:40px; }
+
+/* Grid */
+.grid-2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(440px,1fr)); gap:16px; }
+.grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; }
+
+/* Asset Card */
+.asset-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:22px 24px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.asset-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+.asset-icon { font-size:28px; margin-right:10px; }
+.asset-name { font-size:14px; color:var(--t3); font-weight:700; letter-spacing:0.5px; }
+.asset-symbol { font-size:11px; color:var(--t4); font-family:var(--mono); font-weight:600; }
+.asset-price { font-size:32px; font-weight:700; font-family:var(--mono); margin:8px 0 4px; }
+.asset-change { font-size:14px; font-weight:700; margin-bottom:10px; }
+.asset-change.up { color:var(--green); }
+.asset-change.down { color:var(--red); }
+.asset-meta { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
+.asset-meta-item { font-size:12px; color:var(--t3); font-weight:600; }
+.asset-meta-item span { color:var(--tx); font-weight:700; font-family:var(--mono); }
+
+/* Mini Chart */
+.mini-chart-wrap { position:relative; height:100px; margin-top:10px; border-radius:8px; overflow:hidden; background:var(--bg); }
+.mini-chart-wrap canvas { width:100% !important; height:100% !important; }
+
+/* Insight Card */
+.insight-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:22px 24px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.insight-title { font-size:16px; font-weight:700; margin-bottom:10px; color:var(--tx); }
+.insight-text { font-size:14px; color:var(--t2); line-height:1.8; font-weight:600; }
+.insight-highlight {
+  background:var(--amber-bg); border:1px solid var(--amber-bd);
+  border-radius:8px; padding:12px 16px; margin-top:12px;
+  font-size:14px; color:var(--amber); line-height:1.7; font-weight:700;
+}
+
+/* Tag */
+.tag {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 8px; border-radius:5px;
+  font-size:11px; font-weight:700; line-height:1.4;
+}
+.tag.bullish { background:#dcfce7; color:#15803d; }
+.tag.bearish { background:#fef2f2; color:#dc2626; }
+.tag.neutral { background:#f5f5f0; color:#666; }
+.tag.gold { background:var(--gold-bg); color:var(--gold); border:1px solid var(--gold-bd); }
+.tag.btc { background:var(--btc-bg); color:var(--btc-orange); }
+
+/* Correlation Table */
+.corr-table {
+  width:100%; border-collapse:collapse; font-size:13px; margin-top:12px;
+}
+.corr-table th {
+  text-align:left; padding:8px 12px; color:#666; font-weight:700;
+  font-size:12px; border-bottom:2px solid var(--border);
+}
+.corr-table td {
+  padding:8px 12px; border-bottom:1px solid #f0f0eb; font-weight:600;
+}
+.corr-table tr:last-child td { border-bottom:none; }
+
+/* Commentary */
+.commentary-box {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:24px; margin-top:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.commentary-header {
+  display:flex; align-items:center; gap:10px; margin-bottom:14px;
+}
+.commentary-avatar {
+  width:40px; height:40px; border-radius:10px;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:700; color:#fff; font-family:var(--mono);
+  flex-shrink:0;
+}
+.commentary-author { font-size:15px; font-weight:700; }
+.commentary-label { font-size:11px; color:var(--t3); font-weight:600; }
+.commentary-body { font-size:15px; color:var(--t2); line-height:2.0; font-weight:600; }
+.commentary-body strong { color:var(--tx); font-weight:700; }
+
+/* Footer */
+.footer {
+  text-align:center; padding:28px 0;
+  border-top:1px solid var(--border);
+  font-size:13px; color:var(--t3); line-height:1.9; font-weight:600;
+}
+.footer-highlight { color:var(--t2); margin-top:8px; font-weight:700; }
+
+/* Loading */
+.loading { text-align:center; padding:60px 20px; color:var(--t3); font-weight:700; font-size:15px; }
+.loading-spinner {
+  width:36px; height:36px; border:3px solid var(--border);
+  border-top-color:var(--amber); border-radius:50%;
+  animation:spin 0.8s linear infinite; margin:0 auto 16px;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* Responsive */
+@media (max-width:640px) {
+  .header { padding:12px 16px; }
+  .header-inner { flex-direction:column; align-items:flex-start; gap:8px; }
+  .header-right { width:100%; justify-content:space-between; }
+  .main { padding:16px 16px 48px; }
+  .header-title { font-size:16px; }
+  .asset-price { font-size:24px; }
+  .grid-2 { grid-template-columns:1fr; }
+  .grid-3 { grid-template-columns:1fr; }
+  body { font-size:15px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="logo-icon">BT</div>
+      <div>
+        <div class="header-title">投資判断ダッシュボード — Part 2</div>
+        <div class="header-sub">ドル円・ゴールド・ビットコイン・グローバルサウス</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="updated-time"><div class="live-dot"></div><span id="updatedAt">読み込み中…</span></div>
+      <div class="nav-back">
+        <a href="index.html">← マーケットインフォ</a>
+        <span style="margin:0 6px;color:var(--t4)">|</span>
+        <a href="analysis.html">分析 Part 1</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="mainContent">
+  <div class="loading" id="loadingState">
+    <div class="loading-spinner"></div>
+    data.json を読み込んでいます…
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   バフェット太郎 分析ダッシュボード Part 2
+   ドル円・ゴールド・ビットコイン・グローバルサウス
+   ============================================================ */
+
+// ── ミニチャート描画 ──
+function drawMiniChart(canvas, dates, closes, color, fillColor) {
+  if (!canvas || !closes || closes.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.height;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+
+  const vals = closes.filter(v => v != null);
+  const minVal = Math.min(...vals);
+  const maxVal = Math.max(...vals);
+  const range = maxVal - minVal || 1;
+  const pad = 8;
+
+  const toX = (i) => (i / (closes.length - 1)) * (w - pad * 2) + pad;
+  const toY = (v) => h - pad - ((v - minVal) / range) * (h - pad * 2);
+
+  // Fill
+  ctx.beginPath();
+  ctx.moveTo(toX(0), h);
+  closes.forEach((v, i) => {
+    if (v != null) ctx.lineTo(toX(i), toY(v));
+  });
+  ctx.lineTo(toX(closes.length - 1), h);
+  ctx.closePath();
+  ctx.fillStyle = fillColor || (color + '15');
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  let started = false;
+  closes.forEach((v, i) => {
+    if (v == null) return;
+    const x = toX(i), y = toY(v);
+    if (!started) { ctx.moveTo(x, y); started = true; }
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Last dot
+  const lastIdx = closes.length - 1;
+  const lastY = toY(closes[lastIdx]);
+  ctx.beginPath();
+  ctx.arc(toX(lastIdx), lastY, 3.5, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(toX(lastIdx), lastY, 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+}
+
+// ── 数値フォーマット ──
+function fmt(n, dec) {
+  if (n == null) return '—';
+  if (typeof dec === 'undefined') dec = 2;
+  return n.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+function fmtPct(n) {
+  if (n == null) return '—';
+  return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+}
+
+// ── アセットカードHTML生成 ──
+function renderAssetCard(item, color, fillColor, chartId) {
+  if (!item || !item.ok) return '';
+  const chg = item.change_pct;
+  const chgClass = chg >= 0 ? 'up' : 'down';
+  const icon = item.icon || '';
+  const fromHigh = item.from_high != null ? `52週高値比 ${item.from_high}%` : '';
+
+  return `<div class="asset-card">
+    <div class="asset-card-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${icon ? `<span class="asset-icon">${icon}</span>` : ''}
+          <div>
+            <div class="asset-name">${item.name}</div>
+            <div class="asset-symbol">${item.symbol}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="asset-price" style="color:${color}">${fmt(item.price, item.price > 1000 ? 0 : 2)}</div>
+    <div class="asset-change ${chgClass}">${fmtPct(chg)}（前日比）</div>
+    <div class="asset-meta">
+      <div class="asset-meta-item">52週高値: <span>${fmt(item.high_52w, item.high_52w > 1000 ? 0 : 2)}</span></div>
+      <div class="asset-meta-item">52週安値: <span>${fmt(item.low_52w, item.low_52w > 1000 ? 0 : 2)}</span></div>
+      ${fromHigh ? `<div class="asset-meta-item">${fromHigh}</div>` : ''}
+    </div>
+    <div class="mini-chart-wrap">
+      <canvas id="${chartId}"></canvas>
+    </div>
+  </div>`;
+}
+
+// ── コメンタリーHTML生成 ──
+function renderCommentary(title, bodyHtml) {
+  return `<div class="commentary-box">
+    <div class="commentary-header">
+      <div class="commentary-avatar">BT</div>
+      <div>
+        <div class="commentary-author">バフェット太郎の視点</div>
+        <div class="commentary-label">${title}</div>
+      </div>
+    </div>
+    <div class="commentary-body">${bodyHtml}</div>
+  </div>`;
+}
+
+// ── メインレンダリング ──
+function render(json) {
+  document.getElementById('updatedAt').textContent = json.updated_jst || json.updated_at || '';
+
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+
+  // ── データ抽出 ──
+  const usdjpy = json.fx?.find(f => f.symbol === 'USDJPY=X');
+  const eurjpy = json.fx?.find(f => f.symbol === 'EURJPY=X');
+  const chfjpy = json.fx?.find(f => f.symbol === 'CHFJPY=X');
+  const dxy    = json.fx?.find(f => f.symbol === 'DX=F');
+
+  const gold     = json.commodities?.find(c => c.symbol === 'GC=F');
+  const silver   = json.commodities?.find(c => c.symbol === 'SI=F');
+  const platinum = json.commodities?.find(c => c.symbol === 'PL=F');
+  const oil      = json.commodities?.find(c => c.symbol === 'CL=F');
+
+  const btc = json.crypto?.find(c => c.symbol === 'BTC-USD');
+  const eth = json.crypto?.find(c => c.symbol === 'ETH-USD');
+
+  const sp500 = json.indices?.find(i => i.symbol === '^GSPC');
+  const nikkei = json.indices?.find(i => i.symbol === '^N225');
+
+  const tnx = json.rates?.find(r => r.symbol === '^TNX');
+  const bond10y = tnx?.price ?? 4.25;
+  const ff = json.rates?.find(r => r.tag === 'FEDFUNDS');
+  const fedRate = ff?.price ?? 4.33;
+
+  const charts = []; // { id, item, color, fillColor }
+
+  // ══════════════════════════════════════════════
+  // SECTION 01: ドル円・為替
+  // ══════════════════════════════════════════════
+  let s1 = `<div class="section">
+    <div class="sec-num">SECTION 01</div>
+    <div class="sec-title">為替 — ドル円と日米金利差を読み解く</div>
+    <div class="sec-desc">
+      ドル円相場は日米金利差に連動する傾向があります。FRBが利下げに転じればドル安円高、日銀が利上げに踏み切ればさらに円高が進む可能性があります。
+      日本の個人投資家にとって、為替は米国株投資のリターンを大きく左右する重要な変数です。
+    </div>
+    <div class="grid-2">`;
+
+  if (usdjpy && usdjpy.ok) {
+    s1 += renderAssetCard(usdjpy, '#2563eb', 'rgba(37,99,235,0.08)', 'chartUSDJPY');
+    charts.push({ id:'chartUSDJPY', item:usdjpy, color:'#2563eb', fill:'rgba(37,99,235,0.10)' });
+  }
+  if (eurjpy && eurjpy.ok) {
+    s1 += renderAssetCard(eurjpy, '#7c3aed', 'rgba(124,58,237,0.08)', 'chartEURJPY');
+    charts.push({ id:'chartEURJPY', item:eurjpy, color:'#7c3aed', fill:'rgba(124,58,237,0.10)' });
+  }
+
+  s1 += `</div>`;
+
+  // CHF/JPY もある場合
+  if (chfjpy && chfjpy.ok) {
+    s1 += `<div style="margin-top:16px"><div class="grid-3">`;
+    s1 += renderAssetCard(chfjpy, '#059669', 'rgba(5,150,105,0.08)', 'chartCHFJPY');
+    charts.push({ id:'chartCHFJPY', item:chfjpy, color:'#059669', fill:'rgba(5,150,105,0.10)' });
+    s1 += `</div></div>`;
+  }
+
+  // FX 相関テーブル
+  s1 += `<div class="asset-card" style="margin-top:16px">
+    <div class="insight-title">為替・金利サマリー</div>
+    <table class="corr-table">
+      <thead><tr>
+        <th>指標</th><th style="text-align:right">現在値</th><th style="text-align:right">前日比</th><th>備考</th>
+      </tr></thead>
+      <tbody>`;
+
+  const fxRows = [
+    usdjpy && usdjpy.ok ? { name:'ドル円', val:usdjpy.price, chg:usdjpy.change_pct, note:'日米金利差に連動' } : null,
+    eurjpy && eurjpy.ok ? { name:'ユーロ円', val:eurjpy.price, chg:eurjpy.change_pct, note:'ECBの金融政策に注目' } : null,
+    chfjpy && chfjpy.ok ? { name:'スイスフラン円', val:chfjpy.price, chg:chfjpy.change_pct, note:'安全通貨の代表格' } : null,
+    { name:'米10年債利回り', val:bond10y, chg:tnx?.change_pct, note:'ドル円の主要ドライバー' },
+    { name:'FF金利', val:fedRate, chg:ff?.change_pct, note:'FRBの政策金利' },
+  ].filter(Boolean);
+
+  fxRows.forEach(r => {
+    const chgColor = r.chg != null ? (r.chg >= 0 ? '#16a34a' : '#dc2626') : '#999';
+    s1 += `<tr>
+      <td style="font-weight:700">${r.name}</td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:700">${fmt(r.val)}</td>
+      <td style="text-align:right;font-family:var(--mono);color:${chgColor};font-weight:700">${r.chg != null ? fmtPct(r.chg) : '—'}</td>
+      <td style="color:#777;font-size:13px">${r.note}</td>
+    </tr>`;
+  });
+
+  s1 += `</tbody></table></div>`;
+
+  // ドル円コメンタリー
+  if (usdjpy && usdjpy.ok) {
+    let fxBody = '';
+    const jpy = usdjpy.price;
+    if (jpy >= 155) {
+      fxBody = `ドル円は<strong>${fmt(jpy)}円</strong>と、依然として歴史的な円安水準にあります。
+      これは日米金利差が依然として大きいことが主因です。米10年債利回りが<strong>${fmt(bond10y)}%</strong>と高止まりする中、
+      日銀が追加利上げに踏み切らない限り、円安基調は続く可能性が高いです。<br><br>
+      ただし、FRBが利下げに転じれば日米金利差は縮小し、ドル安円高に振れるシナリオも想定すべきです。
+      日本の個人投資家が米国株に投資する場合、為替ヘッジなしでは円高局面で円建てリターンが大きく毀損するリスクがあります。`;
+    } else if (jpy >= 145) {
+      fxBody = `ドル円は<strong>${fmt(jpy)}円</strong>と、やや落ち着きを見せています。
+      FRBの利下げ観測が強まればドル安円高に振れやすく、145円を割り込めば一段の円高加速も考えられます。`;
+    } else {
+      fxBody = `ドル円は<strong>${fmt(jpy)}円</strong>と、円高が進行しています。
+      日本の個人投資家が保有する米国株の円建て評価額には逆風ですが、新規投資にとっては好機とも言えます。`;
+    }
+    s1 += renderCommentary('ドル円相場の分析', fxBody);
+  }
+
+  s1 += `</div>`;
+  main.innerHTML += s1;
+
+  // ══════════════════════════════════════════════
+  // SECTION 02: ゴールド・コモディティ
+  // ══════════════════════════════════════════════
+  let s2 = `<div class="section">
+    <div class="sec-num">SECTION 02</div>
+    <div class="sec-title">ゴールド・コモディティ — インフレヘッジと実物資産</div>
+    <div class="sec-desc">
+      金は「有事の金」として地政学リスクが高まる局面で買われるほか、各国の中央銀行による金購入が価格を押し上げています。
+      過去20年で金価格は6.2倍にもなり、S&P500の4.8倍を上回るパフォーマンスを記録しています。
+      米国政府の債務残高が膨張する中、ドルの信認低下を懸念した「脱ドル化」の流れが金の追い風になっています。
+    </div>
+    <div class="grid-2">`;
+
+  if (gold && gold.ok) {
+    s2 += renderAssetCard(gold, '#d4a017', 'rgba(212,160,23,0.10)', 'chartGold');
+    charts.push({ id:'chartGold', item:gold, color:'#d4a017', fill:'rgba(212,160,23,0.10)' });
+  }
+  if (silver && silver.ok) {
+    s2 += renderAssetCard(silver, '#94a3b8', 'rgba(148,163,184,0.10)', 'chartSilver');
+    charts.push({ id:'chartSilver', item:silver, color:'#94a3b8', fill:'rgba(148,163,184,0.10)' });
+  }
+  s2 += `</div>`;
+
+  // Platinum & Oil
+  if ((platinum && platinum.ok) || (oil && oil.ok)) {
+    s2 += `<div style="margin-top:16px"><div class="grid-2">`;
+    if (platinum && platinum.ok) {
+      s2 += renderAssetCard(platinum, '#64748b', 'rgba(100,116,139,0.10)', 'chartPlatinum');
+      charts.push({ id:'chartPlatinum', item:platinum, color:'#64748b', fill:'rgba(100,116,139,0.10)' });
+    }
+    if (oil && oil.ok) {
+      s2 += renderAssetCard(oil, '#1e3a5f', 'rgba(30,58,95,0.10)', 'chartOil');
+      charts.push({ id:'chartOil', item:oil, color:'#1e3a5f', fill:'rgba(30,58,95,0.10)' });
+    }
+    s2 += `</div></div>`;
+  }
+
+  // Gold commentary
+  if (gold && gold.ok) {
+    const gp = gold.price;
+    const gFromHigh = gold.from_high;
+    let goldBody = `金スポット価格は<strong>$${fmt(gp, 0)}</strong>で推移しています（52週高値比 ${gFromHigh}%）。`;
+
+    if (gFromHigh > -5) {
+      goldBody += `<br><br>高値圏で推移しており、依然として強気トレンドが継続しています。
+      世界の中央銀行による金購入が続いていることに加え、米国政府の債務残高の膨張がドルの信認を揺るがし、
+      「脱ドル化」の一環として金が買われやすい環境が続いています。`;
+    } else if (gFromHigh > -15) {
+      goldBody += `<br><br>高値からやや調整していますが、長期的な上昇トレンドは崩れていません。
+      中央銀行による金購入と地政学リスクが下支え要因として機能しています。
+      調整局面は押し目買いの好機になる可能性があります。`;
+    } else {
+      goldBody += `<br><br>高値から大幅に調整しています。短期的にはリスクオフの巻き戻しや
+      ドル高の影響が出ている可能性がありますが、長期的なファンダメンタルズ（中央銀行の買い、財政赤字の膨張）は
+      引き続き金にとって追い風です。`;
+    }
+
+    goldBody += `<br><br>ぼくはこれまで記事で述べてきた通り、
+    金と金鉱株の時代がやって来ると考えています。米国政府の債務残高は膨張を続け、
+    年率平均約7%で増え続けています。こうした状況下で、金はドルの代替資産としての地位をさらに高める可能性が高いです。`;
+
+    s2 += renderCommentary('ゴールドの分析', goldBody);
+  }
+
+  // Oil insight
+  if (oil && oil.ok) {
+    s2 += `<div class="insight-highlight" style="margin-top:12px">
+      📌 WTI原油は<strong>$${fmt(oil.price)}</strong>。地政学リスク（中東情勢）と世界景気の動向が原油価格を左右します。
+      原油高はインフレ再燃のリスク要因であり、FRBの利下げ判断にも影響を及ぼします。
+    </div>`;
+  }
+
+  s2 += `</div>`;
+  main.innerHTML += s2;
+
+  // ══════════════════════════════════════════════
+  // SECTION 03: ビットコイン・暗号資産
+  // ══════════════════════════════════════════════
+  let s3 = `<div class="section">
+    <div class="sec-num">SECTION 03</div>
+    <div class="sec-title">ビットコイン・暗号資産 — デジタルゴールドの現在地</div>
+    <div class="sec-desc">
+      ぼくは「ビットコイン信者」ではないけれど、ポートフォリオの1～5%の範囲内でビットコインに投資することを推奨しています。
+      ビットコインはインフレヘッジとしてのナラティブに加え、半減期サイクルという独自の需給構造を持っています。
+    </div>
+    <div class="grid-2">`;
+
+  if (btc && btc.ok) {
+    s3 += renderAssetCard(btc, '#f7931a', 'rgba(247,147,26,0.10)', 'chartBTC');
+    charts.push({ id:'chartBTC', item:btc, color:'#f7931a', fill:'rgba(247,147,26,0.10)' });
+  }
+  if (eth && eth.ok) {
+    s3 += renderAssetCard(eth, '#627eea', 'rgba(98,126,234,0.10)', 'chartETH');
+    charts.push({ id:'chartETH', item:eth, color:'#627eea', fill:'rgba(98,126,234,0.10)' });
+  }
+  s3 += `</div>`;
+
+  // BTC commentary
+  if (btc && btc.ok) {
+    const bp = btc.price;
+    const bFromHigh = btc.from_high;
+    let btcBody = `ビットコインは<strong>$${fmt(bp, 0)}</strong>で推移しています（52週高値比 ${bFromHigh}%）。`;
+
+    if (bp >= 100000) {
+      btcBody += `<br><br>10万ドルの大台を超えており、機関投資家の参入とETF承認の追い風が続いています。`;
+    } else if (bp >= 70000) {
+      btcBody += `<br><br>ビットコインは7万ドル台で推移しています。
+      半減期後のサイクルを踏まえると、次の大きな上昇局面が近い可能性がありますが、
+      高値からの調整幅が大きいことには注意が必要です。`;
+    } else {
+      btcBody += `<br><br>高値から大幅に下落しており、暗号資産市場全体のリスクオフが進んでいます。`;
+    }
+
+    btcBody += `<br><br>ぼくがこれまで記事で述べてきた通り、
+    ビットコインへの投資はポートフォリオの<strong>1～5%の範囲内</strong>に留めるべきです。
+    暗号資産は高いリターンが期待できる反面、50%以上の暴落が頻繁に起きる資産クラスですから、
+    投資額を限定することでリスクをコントロールすることが重要です。`;
+
+    if (eth && eth.ok) {
+      btcBody += `<br><br>イーサリアムは<strong>$${fmt(eth.price, 0)}</strong>で推移しています（52週高値比 ${eth.from_high}%）。
+      スマートコントラクトのプラットフォームとしての地位は盤石ですが、
+      投資判断としてはビットコインを優先すべきだと考えています。`;
+    }
+
+    s3 += renderCommentary('暗号資産の分析', btcBody);
+  }
+
+  s3 += `</div>`;
+  main.innerHTML += s3;
+
+  // ══════════════════════════════════════════════
+  // SECTION 04: グローバルサウス
+  // ══════════════════════════════════════════════
+  let s4 = `<div class="section">
+    <div class="sec-num">SECTION 04</div>
+    <div class="sec-title">グローバルサウス — 次の投資ブームの震源地</div>
+    <div class="sec-desc">
+      ぼくはこれまで「米国株の時代は景気後退とともに終わる」と述べてきました。
+      次の景気拡大局面では、グローバルサウス（新興国・途上国）への投資がブームになる可能性があります。
+      インド、ブラジル、東南アジアなど、人口ボーナスを抱える国々は長期的な成長エンジンとなり得ます。
+    </div>`;
+
+  // グローバルサウスの概要カード
+  s4 += `<div class="grid-3">
+    <div class="asset-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:24px">🇮🇳</span>
+        <div>
+          <div class="asset-name">インド</div>
+          <div class="asset-symbol">GDP成長率 +6%台</div>
+        </div>
+      </div>
+      <div class="insight-text">
+        世界最大の人口を擁し、IT・デジタル産業を中心に高成長が続く。
+        ただし、インフレ再燃や景況感の急速な悪化には注意が必要。
+        ウィズダムツリー・インド収益ファンド（EPI）が代表的なETF。
+      </div>
+      <div style="margin-top:10px">
+        <span class="tag bullish">長期有望</span>
+        <span class="tag neutral">短期調整リスク</span>
+      </div>
+    </div>
+
+    <div class="asset-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:24px">🇧🇷</span>
+        <div>
+          <div class="asset-name">ブラジル</div>
+          <div class="asset-symbol">資源国・農業大国</div>
+        </div>
+      </div>
+      <div class="insight-text">
+        コモディティ価格の上昇が追い風。鉄鉱石・大豆・原油の主要輸出国。
+        レアル安による競争力向上もプラス材料。
+        iシェアーズ MSCI ブラジルETF（EWZ）で投資可能。
+      </div>
+      <div style="margin-top:10px">
+        <span class="tag bullish">コモディティ連動</span>
+        <span class="tag bearish">政治リスク</span>
+      </div>
+    </div>
+
+    <div class="asset-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:24px">🌏</span>
+        <div>
+          <div class="asset-name">東南アジア</div>
+          <div class="asset-symbol">ASEAN諸国</div>
+        </div>
+      </div>
+      <div class="insight-text">
+        ベトナム、インドネシア、フィリピンなど、若年人口が多く生産年齢人口が増加中。
+        中国からの製造業のシフト先として注目。
+        iシェアーズ MSCI 新興国ETF（EEM）やバンガード FTSE エマージング（VWO）で広くカバー。
+      </div>
+      <div style="margin-top:10px">
+        <span class="tag bullish">人口ボーナス</span>
+        <span class="tag neutral">中国依存リスク</span>
+      </div>
+    </div>
+  </div>`;
+
+  // 新興国の現状サマリーテーブル
+  s4 += `<div class="asset-card" style="margin-top:16px">
+    <div class="insight-title">グローバルサウス関連ETF — 注目銘柄</div>
+    <table class="corr-table">
+      <thead><tr>
+        <th>ティッカー</th><th>名称</th><th>対象国・地域</th><th>特徴</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="font-family:var(--mono);font-weight:700">EPI</td><td>ウィズダムツリー・インド収益ファンド</td><td>🇮🇳 インド</td><td>インド株の代表的ETF</td></tr>
+        <tr><td style="font-family:var(--mono);font-weight:700">EWZ</td><td>iシェアーズ MSCI ブラジル</td><td>🇧🇷 ブラジル</td><td>資源・農業セクター中心</td></tr>
+        <tr><td style="font-family:var(--mono);font-weight:700">EEM</td><td>iシェアーズ MSCI 新興国</td><td>🌍 新興国全体</td><td>幅広い新興国に分散</td></tr>
+        <tr><td style="font-family:var(--mono);font-weight:700">VWO</td><td>バンガード FTSE エマージング</td><td>🌍 新興国全体</td><td>低コストで新興国に投資</td></tr>
+        <tr><td style="font-family:var(--mono);font-weight:700">FXI</td><td>iシェアーズ 中国大型株</td><td>🇨🇳 中国</td><td>中国大型株。バランスシート不況リスクに注意</td></tr>
+        <tr><td style="font-family:var(--mono);font-weight:700">EWY</td><td>iシェアーズ MSCI 韓国</td><td>🇰🇷 韓国</td><td>半導体サイクルに連動</td></tr>
+      </tbody>
+    </table>
+  </div>`;
+
+  // グローバルサウスコメンタリー
+  let gsBody = `ぼくはこれまで記事で繰り返し述べてきましたが、
+  <strong>「米国株の時代」は景気後退とともに終わる</strong>可能性があります。
+  2009年6月から始まった米国株の黄金時代は、次の景気後退とともに終わりを迎え、
+  次の景気拡大局面では全く別の投資対象がブームになる可能性が高いです。<br><br>
+
+  そして、その「次のブーム」の有力候補が<strong>グローバルサウス</strong>です。<br><br>
+
+  グローバルサウスとは、一般的には欧米先進諸国よりも南に位置する発展途上国のことを指します。
+  インド、ブラジル、インドネシア、ベトナム、フィリピンなどが含まれます。<br><br>
+
+  これらの国々は人口ボーナス期にあり、生産年齢人口の増加が経済成長を押し上げるドライバーとなっています。
+  また、中国からの製造業のシフト先としても注目されており、
+  サプライチェーンの多様化という構造的なトレンドの恩恵を受ける立場にあります。<br><br>
+
+  <strong>ただし、注意すべきリスクもあります。</strong><br>
+  ・新興国株からは巨額の資金流出が続いており、2024年11月にはEPFRデータで約74億ドルの流出を記録<br>
+  ・中国株からの流出が特に顕著で、中国経済のバランスシート不況リスクは依然として高い<br>
+  ・インドの景況感は急速に悪化しており、短期的な調整リスクがある<br><br>
+
+  したがって、グローバルサウスへの投資は<strong>長期的な視点</strong>で臨むべきであり、
+  現時点で大きなポジションを取るのは時期尚早です。
+  米経済の景気後退が確認された後、次の景気拡大局面の初期に投資を開始するのが賢明だとぼくは考えています。`;
+
+  s4 += renderCommentary('グローバルサウスへの投資戦略', gsBody);
+
+  s4 += `</div>`;
+  main.innerHTML += s4;
+
+  // ══════════════════════════════════════════════
+  // SECTION 05: 横断比較（ダイジェスト）
+  // ══════════════════════════════════════════════
+  let s5 = `<div class="section">
+    <div class="sec-num">SECTION 05</div>
+    <div class="sec-title">横断比較 — 全アセット一覧</div>
+    <div class="sec-desc">
+      data.json に含まれるドル円、コモディティ、暗号資産を一覧にまとめました。
+    </div>
+    <div class="asset-card">
+    <table class="corr-table">
+      <thead><tr>
+        <th></th><th>アセット</th><th style="text-align:right">現在値</th><th style="text-align:right">前日比</th><th style="text-align:right">52週高値比</th>
+      </tr></thead>
+      <tbody>`;
+
+  const allAssets = [
+    usdjpy, eurjpy, chfjpy,
+    gold, silver, platinum, oil,
+    btc, eth
+  ].filter(a => a && a.ok);
+
+  allAssets.forEach(a => {
+    const chgColor = a.change_pct >= 0 ? '#16a34a' : '#dc2626';
+    const highColor = a.from_high > -5 ? '#16a34a' : (a.from_high > -20 ? '#b45309' : '#dc2626');
+    s5 += `<tr>
+      <td style="font-size:18px;width:32px">${a.icon || ''}</td>
+      <td style="font-weight:700">${a.name}<br><span style="font-size:11px;color:#999;font-family:var(--mono)">${a.symbol}</span></td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:700;font-size:15px">${fmt(a.price, a.price > 1000 ? 0 : 2)}</td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:700;color:${chgColor}">${fmtPct(a.change_pct)}</td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:700;color:${highColor}">${a.from_high != null ? a.from_high + '%' : '—'}</td>
+    </tr>`;
+  });
+
+  s5 += `</tbody></table></div></div>`;
+  main.innerHTML += s5;
+
+  // ── Footer ──
+  main.innerHTML += `<div class="footer">
+    <div>本ダッシュボードはバフェット太郎の分析手法を参考に構築されたものであり、投資助言ではありません。</div>
+    <div>投資判断は必ずご自身の責任で行ってください。</div>
+    <div class="footer-highlight">Part 1（バリュエーション・テクニカル・マクロ・アノマリー）は <a href="analysis.html">こちら</a></div>
+  </div>`;
+
+  // ── チャート描画 ──
+  requestAnimationFrame(() => {
+    charts.forEach(c => {
+      const canvas = document.getElementById(c.id);
+      if (canvas && c.item.closes) {
+        drawMiniChart(canvas, c.item.dates, c.item.closes, c.color, c.fill);
+      }
+    });
+  });
+}
+
+// ── ロード ──
+async function load() {
+  try {
+    const r = await fetch('data.json?t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    render(await r.json());
+  } catch (e) {
+    console.error(e);
+    document.getElementById('mainContent').innerHTML =
+      '<div style="text-align:center;padding:60px 20px;color:#ef4444">⚠ data.json の読み込みに失敗しました。<br>GitHub Actions → "Update Market Data" を実行してください。</div>';
+  }
+}
+
+load();
+</script>
+</body>
+</html>
