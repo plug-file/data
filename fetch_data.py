@@ -260,6 +260,107 @@ def fetch_sp500_per() -> dict:
         return {**meta, "ok": False, "price": None, "change_pct": None, "dates": [], "closes": []}
 
 
+def fetch_moving_averages() -> dict:
+    """
+    S&P500, NASDAQ, Dow Jones の50日/200日移動平均線データを取得する。
+    yfinance で 1年分のヒストリーを取得し、移動平均を計算する。
+    ミニチャート用に直近60日分の終値・50日線・200日線のデータも返す。
+    """
+    MA_TARGETS = [
+        {"symbol": "^GSPC", "name": "S&P 500"},
+        {"symbol": "^IXIC", "name": "NASDAQ"},
+        {"symbol": "^DJI",  "name": "Dow Jones"},
+    ]
+
+    print("\n[moving_averages]")
+    results = {}
+
+    for target in MA_TARGETS:
+        sym = target["symbol"]
+        name = target["name"]
+        print(f"  Fetching MA data: {name} ({sym}) ...", end=" ")
+        try:
+            ticker = yf.Ticker(sym)
+            hist = ticker.history(period="1y", interval="1d", auto_adjust=True)
+
+            if hist.empty or len(hist) < 50:
+                print(f"✗ データ不足 ({len(hist)}行)")
+                results[sym] = {"name": name, "ok": False}
+                continue
+
+            closes = hist["Close"].dropna()
+
+            # 移動平均を計算
+            ma50 = closes.rolling(window=50).mean()
+            ma200 = closes.rolling(window=200).mean() if len(closes) >= 200 else None
+
+            price = float(closes.iloc[-1])
+            ma50_val = float(ma50.iloc[-1]) if ma50.iloc[-1] == ma50.iloc[-1] else None
+            ma200_val = float(ma200.iloc[-1]) if (ma200 is not None and ma200.iloc[-1] == ma200.iloc[-1]) else None
+
+            # 乖離率
+            ma50_dev = round((price - ma50_val) / ma50_val * 100, 2) if ma50_val else None
+            ma200_dev = round((price - ma200_val) / ma200_val * 100, 2) if ma200_val else None
+
+            # ゴールデンクロス / デッドクロス判定
+            cross = None
+            if ma200 is not None and len(ma50) >= 2 and len(ma200) >= 2:
+                prev_ma50 = float(ma50.iloc[-2]) if ma50.iloc[-2] == ma50.iloc[-2] else None
+                prev_ma200 = float(ma200.iloc[-2]) if ma200.iloc[-2] == ma200.iloc[-2] else None
+                if prev_ma50 and prev_ma200 and ma50_val and ma200_val:
+                    if prev_ma50 <= prev_ma200 and ma50_val > ma200_val:
+                        cross = "golden"
+                    elif prev_ma50 >= prev_ma200 and ma50_val < ma200_val:
+                        cross = "dead"
+
+            # 52週高値からの下落率（直近1年の高値から）
+            high_52w = float(closes.max())
+            from_high = round((price - high_52w) / high_52w * 100, 2) if high_52w else None
+
+            # ミニチャート用: 直近60営業日分のデータ
+            chart_len = min(60, len(closes))
+            chart_closes = [round(float(v), 2) for v in closes.iloc[-chart_len:]]
+            chart_ma50 = []
+            chart_ma200 = []
+            chart_dates = [d.strftime("%m/%d") for d in closes.index[-chart_len:]]
+
+            for i in range(len(closes) - chart_len, len(closes)):
+                v50 = float(ma50.iloc[i]) if (i < len(ma50) and ma50.iloc[i] == ma50.iloc[i]) else None
+                chart_ma50.append(round(v50, 2) if v50 else None)
+                if ma200 is not None and i < len(ma200):
+                    v200 = float(ma200.iloc[i]) if ma200.iloc[i] == ma200.iloc[i] else None
+                    chart_ma200.append(round(v200, 2) if v200 else None)
+                else:
+                    chart_ma200.append(None)
+
+            results[sym] = {
+                "name": name,
+                "ok": True,
+                "price": round(price, 2),
+                "ma50": round(ma50_val, 2) if ma50_val else None,
+                "ma200": round(ma200_val, 2) if ma200_val else None,
+                "ma50_dev": ma50_dev,
+                "ma200_dev": ma200_dev,
+                "cross": cross,
+                "high_52w": round(high_52w, 2),
+                "from_high": from_high,
+                # ミニチャート用
+                "chart_dates": chart_dates,
+                "chart_closes": chart_closes,
+                "chart_ma50": chart_ma50,
+                "chart_ma200": chart_ma200,
+            }
+            above50 = "上回る" if (ma50_dev and ma50_dev > 0) else "下回る"
+            above200 = "上回る" if (ma200_dev and ma200_dev > 0) else ("下回る" if ma200_dev else "N/A")
+            print(f"✓ {price:.0f} (50日線{above50}, 200日線{above200})")
+
+        except Exception as e:
+            print(f"✗ エラー: {e}")
+            results[sym] = {"name": name, "ok": False}
+
+    return results
+
+
 def fetch_shiller_cape() -> dict:
     """
     シラーPER（CAPE: Cyclically Adjusted PE Ratio）を取得する。
@@ -771,6 +872,10 @@ def main():
     output["shiller_cape"] = cape
     status = "✓" if cape["ok"] else "✗"
     print(f"  {status} {cape['symbol']}: {cape.get('price')}")
+
+    # 移動平均線データ → output["moving_averages"] に追加
+    ma_data = fetch_moving_averages()
+    output["moving_averages"] = ma_data
 
     # FRED API: マクロ経済指標 → output["macro"] に追加
     fred_api_key = os.environ.get("FRED_API_KEY")
