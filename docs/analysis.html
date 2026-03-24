@@ -381,41 +381,41 @@ function analyze(d) {
   const bear = (s, txt) => { score -= s; reasons.push({ text: txt, type: 'bearish' }); };
 
   // 1. リスクプレミアム
-  if (riskPremium > 2) { bull(2, "リスクプレミアムが十分（割安）"); }
-  else if (riskPremium > 0) { bull(1, "リスクプレミアムはプラス（適正）"); }
-  else if (riskPremium > -1) { bear(1, "リスクプレミアムがマイナス圏（やや割高）"); }
-  else { bear(2, "リスクプレミアムが大幅マイナス（割高）"); }
+  if (riskPremium > 2) { bull(2, `リスクプレミアムが${riskPremium.toFixed(2)}%と十分にプラス圏で、株式は債券に対して割安`); }
+  else if (riskPremium > 0) { bull(1, `リスクプレミアムが${riskPremium.toFixed(2)}%とプラス圏を維持（適正水準）`); }
+  else if (riskPremium > -1) { bear(1, `リスクプレミアムが${riskPremium.toFixed(2)}%とマイナス圏に突入（株式はやや割高）`); }
+  else { bear(2, `リスクプレミアムが${riskPremium.toFixed(2)}%と大幅マイナス（株式より債券が魅力的）`); }
 
   // 2. PER（シラーPERが取得できていればCAPEベースで判定）
   if (d.hasCape) {
-    if (d.shillerPer >= 40) { bear(2, `CAPE ${d.shillerPer.toFixed(1)}倍 — 歴史的バブル水準`); }
-    else if (d.shillerPer >= 30) { bear(2, `CAPE ${d.shillerPer.toFixed(1)}倍 — バブル水準に接近`); }
-    else if (d.shillerPer >= 25) { bear(1, `CAPE ${d.shillerPer.toFixed(1)}倍 — やや割高`); }
-    else if (d.shillerPer >= 15) { bull(1, "シラーPERは適正水準"); }
-    else { bull(2, "シラーPERが歴史的に割安"); }
+    if (d.shillerPer >= 40) { bear(2, `シラーPER（CAPE）${d.shillerPer.toFixed(1)}倍は歴史的バブル水準（長期中央値は16倍）`); }
+    else if (d.shillerPer >= 30) { bear(2, `シラーPER（CAPE）${d.shillerPer.toFixed(1)}倍はバブル水準に接近（長期中央値の2倍超）`); }
+    else if (d.shillerPer >= 25) { bear(1, `シラーPER（CAPE）${d.shillerPer.toFixed(1)}倍はやや割高（長期中央値16倍を大きく上回る）`); }
+    else if (d.shillerPer >= 15) { bull(1, `シラーPER（CAPE）${d.shillerPer.toFixed(1)}倍は適正水準`); }
+    else { bull(2, `シラーPER（CAPE）${d.shillerPer.toFixed(1)}倍は歴史的に割安`); }
   } else {
-    if (d.per < 15) { bull(2, "PER15倍未満で割安"); }
-    else if (d.per < 20) { bull(1, "PERは適正水準"); }
-    else if (d.per < 25) { bear(1, "PERがやや割高"); }
-    else { bear(2, `PER${d.per.toFixed(1)}倍 — バブル水準`); }
+    if (d.per < 15) { bull(2, `実績PER${d.per.toFixed(1)}倍は歴史的に割安`); }
+    else if (d.per < 20) { bull(1, `実績PER${d.per.toFixed(1)}倍は適正水準`); }
+    else if (d.per < 25) { bear(1, `実績PER${d.per.toFixed(1)}倍はやや割高`); }
+    else { bear(2, `実績PER${d.per.toFixed(1)}倍はバブル水準に接近`); }
   }
 
   // 3. アノマリー
-  if (anomaly.winRate >= 65) { bull(1, `${anomaly.month}は株高になりやすい（勝率${anomaly.winRate}%）`); }
-  else if (anomaly.winRate <= 50) { bear(1, `${anomaly.month}はパフォーマンスが悪い（勝率${anomaly.winRate}%）`); }
+  if (anomaly.winRate >= 65) { bull(1, `${anomaly.month}は歴史的に株高になりやすい月（1950年以降の勝率${anomaly.winRate}%）`); }
+  else if (anomaly.winRate <= 50) { bear(1, `${anomaly.month}は歴史的にパフォーマンスが悪い月（1950年以降の勝率${anomaly.winRate}%）`); }
 
   // 4. CPI
-  if (d.cpi <= 2.5) { bull(1, "インフレ落ち着き — 利下げ余地あり"); }
-  else if (d.cpi >= 3.5) { bear(1, "インフレ高止まり — 利下げ遠のく"); }
+  if (d.cpi <= 2.5) { bull(1, `CPI前年比+${d.cpi.toFixed(1)}%でインフレは落ち着いており、FRBの利下げ余地が広がっている`); }
+  else if (d.cpi >= 3.5) { bear(1, `CPI前年比+${d.cpi.toFixed(1)}%でインフレが高止まりしており、利下げが遠のいている`); }
 
   // 5. ISMサービス業
-  if (d.ismSvc < 50) { bear(1, "サービス業PMI 50割れ — 景気後退リスク"); }
-  else if (d.ismSvc > 55) { bull(1, "サービス業PMI 55超 — 景気堅調"); }
+  if (d.ismSvc < 50) { bear(1, `サービス業PMIが${d.ismSvc.toFixed(1)}と好不況の分かれ目50を下回り、景気後退リスクが高まっている`); }
+  else if (d.ismSvc > 55) { bull(1, `サービス業PMIが${d.ismSvc.toFixed(1)}と55を超えており、景気は堅調に推移している`); }
 
   // 6. 大統領サイクル
   const year = new Date().getFullYear();
   if (year === 2025 || year === 2026) {
-    bear(1, "大統領サイクル：任期1年目は株安傾向");
+    bear(1, "大統領サイクル：共和党任期1年目は痛みを伴う政策が集中し、株安になりやすい");
   }
 
   // 7. 移動平均線（S&P500ベース）
@@ -423,17 +423,17 @@ function analyze(d) {
   if (spMA && spMA.ok) {
     if (spMA.ma50_dev != null) {
       if (spMA.ma50_dev > 0 && spMA.ma200_dev != null && spMA.ma200_dev > 0) {
-        bull(1, "S&P500 — 50日線・200日線を上回る");
+        bull(1, "S&P500は50日移動平均線・200日移動平均線をともに上回っており、上昇トレンドが継続");
       } else if (spMA.ma50_dev < 0 && spMA.ma200_dev != null && spMA.ma200_dev < 0) {
-        bear(1, "S&P500 — 50日線・200日線を下回る");
+        bear(1, "S&P500は50日移動平均線・200日移動平均線をともに下回っており、下降トレンド入りの可能性");
       } else if (spMA.ma50_dev < 0) {
-        bear(1, "S&P500 — 50日線を下回る");
+        bear(1, "S&P500は50日移動平均線を下回っており、短期的に弱気なシグナル");
       }
     }
     if (spMA.cross === 'dead') {
-      bear(1, "S&P500 デッドクロス発生");
+      bear(1, "S&P500でデッドクロスが発生（50日線が200日線を下抜け、長期トレンドの転換シグナル）");
     } else if (spMA.cross === 'golden') {
-      bull(1, "S&P500 ゴールデンクロス発生");
+      bull(1, "S&P500でゴールデンクロスが発生（50日線が200日線を上抜け、長期トレンドの転換シグナル）");
     }
   }
 
@@ -801,10 +801,10 @@ function render(json) {
       { from:4, to:6, label:"引き締め", color:"#ef4444" },
     ]);
 
-  s2 += `</div></div>`;
+  s2 += `</div>`;  // grid-3 を閉じる（.section はまだ閉じない）
   main.innerHTML += s2;
 
-  // ── マクロ指標一覧テーブル ──
+  // ── マクロ指標一覧テーブル（SECTION 03 内に統合） ──
   if (d.hasMacroData) {
     const trendIcon = { up:'<span style="color:#22c55e">▲</span>', dn:'<span style="color:#ef4444">▼</span>', neu:'<span style="color:#6b7280">—</span>' };
     const macroRows = [
@@ -871,8 +871,11 @@ function render(json) {
       </tr>`;
     });
 
-    mtHtml += `</tbody></table></div></div>`;
+    mtHtml += `</tbody></table></div></div></div>`;  // table → gauge-card → サブdiv → .section
     main.innerHTML += mtHtml;
+  } else {
+    // マクロデータがない場合もSECTION 03 の .section を閉じる
+    main.innerHTML += `</div>`;
   }
 
   // ── SECTION 04: アノマリー ──
