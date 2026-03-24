@@ -325,11 +325,21 @@ function analyze(d) {
   else if (riskPremium > -1) { score -= 1; reasons.push("リスクプレミアムがマイナス圏（やや割高）"); }
   else { score -= 2; reasons.push("リスクプレミアムが大幅マイナス（割高）"); }
 
-  // 2. PER
-  if (d.per < 15) { score += 2; reasons.push("PER15倍未満で歴史的に割安"); }
-  else if (d.per < 20) { score += 1; reasons.push("PERは適正水準"); }
-  else if (d.per < 25) { score -= 1; reasons.push("PERがやや割高"); }
-  else { score -= 2; reasons.push(`PER${d.per.toFixed(1)}倍はバブル水準に接近`); }
+  // 2. PER（シラーPERが取得できていればCAPEベースで判定）
+  if (d.hasCape) {
+    // シラーPER（CAPE）の閾値: 長期中央値は約16倍
+    if (d.shillerPer >= 40) { score -= 2; reasons.push(`シラーPER（CAPE）${d.shillerPer.toFixed(1)}倍は歴史的バブル水準`); }
+    else if (d.shillerPer >= 30) { score -= 2; reasons.push(`シラーPER（CAPE）${d.shillerPer.toFixed(1)}倍はバブル水準に接近`); }
+    else if (d.shillerPer >= 25) { score -= 1; reasons.push(`シラーPER（CAPE）${d.shillerPer.toFixed(1)}倍はやや割高`); }
+    else if (d.shillerPer >= 15) { score += 1; reasons.push("シラーPERは適正水準"); }
+    else { score += 2; reasons.push("シラーPERが歴史的に割安"); }
+  } else {
+    // フォールバック: 実績PERベース
+    if (d.per < 15) { score += 2; reasons.push("PER15倍未満で歴史的に割安"); }
+    else if (d.per < 20) { score += 1; reasons.push("PERは適正水準"); }
+    else if (d.per < 25) { score -= 1; reasons.push("PERがやや割高"); }
+    else { score -= 2; reasons.push(`PER${d.per.toFixed(1)}倍はバブル水準に接近`); }
+  }
 
   // 3. アノマリー
   if (anomaly.winRate >= 65) { score += 1; reasons.push(`${anomaly.month}は歴史的に株高になりやすい（勝率${anomaly.winRate}%）`); }
@@ -384,15 +394,19 @@ function extractData(json) {
   // VIX
   const vix = json.vix?.price ?? 18;
 
-  // PER
+  // PER（実績）
   const perObj = json.sp500_pe;
   const per = perObj?.price ?? 26.5;
 
-  // 益回り = 100 / PER
-  const earningsYield = per > 0 ? (100 / per) : 3.77;
+  // シラーPER（CAPE）— data.json から実データを取得
+  const capeObj = json.shiller_cape;
+  const hasCape = capeObj?.ok && capeObj?.price != null;
+  const shillerPer = hasCape ? capeObj.price : (per * 1.43);  // フォールバック: 推定値
 
-  // シラーPER（data.jsonにない場合は推定: 通常PERの約1.4倍）
-  const shillerPer = per * 1.43;
+  // 益回り = シラーPERが取得できればCAPEベース、なければ実績PERベース
+  const earningsYield = hasCape
+    ? (shillerPer > 0 ? (100 / shillerPer) : 2.71)
+    : (per > 0 ? (100 / per) : 3.77);
 
   // ── マクロ指標: data.json の "macro" から自動取得 ──
   const m = json.macro || {};
@@ -425,7 +439,7 @@ function extractData(json) {
   }
 
   return {
-    sp500, per, shillerPer, earningsYield,
+    sp500, per, shillerPer, hasCape, earningsYield,
     bond10y, bond30y, bond2y, fedRate, vix,
     cpi, coreCpi, pce, unemployment,
     ismMfg, ismSvc, umcsent, jolts,
@@ -463,6 +477,7 @@ function render(json) {
       <div class="data-source-text">
         市場データ（yfinance）+ マクロ経済指標（FRED API）の両方を <strong>data.json</strong> から自動読み込みしています。<br>
         GitHub Actionsで毎日自動更新されます。サービス業PMI（S&Pグローバル）のみFREDで取得できない場合があります。
+        ${d.hasCape ? '<br>シラーPER（CAPE）: multpl.com から自動取得済み。' : '<br>⚠ シラーPER（CAPE）未取得 — 実績PERでフォールバック中。'}
       </div>
     </div>`;
   } else {
@@ -481,8 +496,10 @@ function render(json) {
     <div class="sec-num">SECTION 01</div>
     <div class="sec-title">バリュエーション判定 — 益回り vs 債券利回り</div>
     <div class="sec-desc">
-      S&P500の益回り（PERの逆数）と米10年債利回りを比較し、リスクプレミアム（＝益回り－債券利回り）を算出します。
+      S&P500の益回り（シラーPERの逆数）と米10年債利回りを比較し、リスクプレミアム（＝益回り－債券利回り）を算出します。
       リスクプレミアムがマイナスなら「株より債券の方が魅力的」ということであり、バブルの警戒サインです。
+      ${d.hasCape ? '※ シラーPER（CAPE）は過去10年の実質利益平均に基づくため、一時的な利益変動の影響を受けにくい指標です。'
+                  : '※ シラーPER未取得のため実績PERを使用。実績PERはCAPEより低く出る傾向があります。'}
     </div>
     <div class="grid-3">`;
 
@@ -495,14 +512,27 @@ function render(json) {
       { from:3, to:6, label:"割安", color:"#22c55e" },
     ]);
 
-  s1 += renderGauge("S&P500 PER（実績）", d.per,
-    "PER20倍が長期平均。25倍超はやや割高、30倍超はバブル警戒",
-    10, 40, [
-      { from:10, to:15, label:"割安", color:"#22c55e" },
-      { from:15, to:20, label:"適正", color:"#facc15" },
-      { from:20, to:25, label:"やや割高", color:"#fb923c" },
-      { from:25, to:40, label:"バブル警戒", color:"#ef4444" },
-    ]);
+  // PERゲージ: シラーPER（CAPE）が取得できていればそちらを使用
+  if (d.hasCape) {
+    s1 += renderGauge("シラーPER（CAPE）", d.shillerPer,
+      `CAPE16倍が長期中央値。25超はやや割高、30超はバブル警戒、40超は歴史的バブル`,
+      10, 50, [
+        { from:10, to:15, label:"割安", color:"#22c55e" },
+        { from:15, to:25, label:"適正〜やや割高", color:"#facc15" },
+        { from:25, to:30, label:"やや割高", color:"#fb923c" },
+        { from:30, to:40, label:"バブル警戒", color:"#ef4444" },
+        { from:40, to:50, label:"歴史的バブル", color:"#991b1b" },
+      ]);
+  } else {
+    s1 += renderGauge("S&P500 PER（実績）", d.per,
+      "PER20倍が長期平均。25倍超はやや割高、30倍超はバブル警戒 ※シラーPER取得不可のためフォールバック",
+      10, 40, [
+        { from:10, to:15, label:"割安", color:"#22c55e" },
+        { from:15, to:20, label:"適正", color:"#facc15" },
+        { from:20, to:25, label:"やや割高", color:"#fb923c" },
+        { from:25, to:40, label:"バブル警戒", color:"#ef4444" },
+      ]);
+  }
 
   s1 += renderGauge("VIX（恐怖指数）", d.vix,
     "20未満は安心。30超はパニック。65超は歴史的暴落レベル",
@@ -516,8 +546,9 @@ function render(json) {
   s1 += `</div>`;
 
   // Yield comparison bars
+  const eyLabel = d.hasCape ? "S&P500\n益回り(CAPE)" : "S&P500\n益回り";
   const bars = [
-    { label:"S&P500\n益回り", value:d.earningsYield, color:"#3b82f6" },
+    { label:eyLabel, value:d.earningsYield, color:"#3b82f6" },
     { label:"米10年債\n利回り", value:d.bond10y, color:"#f59e0b" },
     { label:"米2年債\n利回り", value:d.bond2y, color:"#a78bfa" },
     { label:"リスク\nプレミアム", value:a.riskPremium, color:a.riskPremium >= 0 ? "#22c55e" : "#ef4444" },
@@ -624,6 +655,18 @@ function render(json) {
             <th style="text-align:left;padding:8px 12px;color:#666;font-weight:700;font-size:13px">備考</th>
           </tr>
         </thead><tbody>`;
+
+    // シラーPER（CAPE）をテーブル先頭に特別行として追加
+    if (d.hasCape) {
+      mtHtml += `<tr style="border-bottom:1px solid #eeeeea;background:#fffbeb">
+        <td style="padding:8px 12px;font-weight:700">シラーPER（CAPE）</td>
+        <td style="text-align:right;padding:8px 12px;font-family:var(--mono);font-weight:700;color:#b45309">${d.shillerPer.toFixed(2)}</td>
+        <td style="text-align:right;padding:8px 12px;font-family:var(--mono);color:#666;font-weight:600">—</td>
+        <td style="text-align:center;padding:8px 12px">—</td>
+        <td style="text-align:right;padding:8px 12px;color:#666;font-size:13px;font-weight:600">—</td>
+        <td style="padding:8px 12px;color:#777;font-size:13px;font-weight:600">10年平均実質利益ベース。長期中央値16倍</td>
+      </tr>`;
+    }
 
     macroRows.forEach(row => {
       const meta = d.macroMeta[row.tag];

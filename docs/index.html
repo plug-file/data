@@ -501,6 +501,11 @@ function renderAll(d){
   if(rPE&&rPE.ok&&rPE.price!=null){
     rateHtml+=card(rPE,{dot:'dot-b',d:1,delay:(di++)*40});
   }
+  // シラーPER（CAPE）
+  const rCAPE=d.shiller_cape;
+  if(rCAPE&&rCAPE.ok&&rCAPE.price!=null){
+    rateHtml+=card(rCAPE,{dot:'dot-b',d:1,delay:(di++)*40});
+  }
   document.getElementById('rateRow').innerHTML=rateHtml;
 
   // FX
