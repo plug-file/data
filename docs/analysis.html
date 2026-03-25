@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>バフェット太郎の投資判断ダッシュボード</title>
+<title>投資判断ダッシュボード</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="BT Market">
@@ -280,7 +280,7 @@ a:hover { text-decoration:underline; }
     <div class="header-left">
       <div class="logo-icon">BT</div>
       <div>
-        <div class="header-title">バフェット太郎の投資判断ダッシュボード</div>
+        <div class="header-title">投資判断ダッシュボード</div>
         <div class="header-sub">数字と数字の「関係性」から市場を読み解く</div>
       </div>
     </div>
@@ -295,7 +295,7 @@ a:hover { text-decoration:underline; }
 <div style="padding:0 24px">
   <div class="verdict-banner" id="verdictBanner">
     <div class="verdict-left">
-      <div class="verdict-label">バフェット太郎の総合判定</div>
+      <div class="verdict-label">総合判定</div>
       <span class="verdict-value" id="verdictText">—</span>
       <div class="verdict-score" id="verdictScore"></div>
       <div class="verdict-summary" id="verdictSummary"></div>
@@ -313,7 +313,7 @@ a:hover { text-decoration:underline; }
 
 <script>
 /* ============================================================
-   バフェット太郎 分析ダッシュボード — Pure JS (GitHub Pages用)
+   分析ダッシュボード — Pure JS (GitHub Pages用)
    data.json から自動でデータを読み込み、分析・可視化する
    ============================================================ */
 
@@ -948,7 +948,7 @@ function render(json) {
 
   // ── Footer ──
   main.innerHTML += `<div class="footer">
-    <div>本ダッシュボードはバフェット太郎の分析手法を参考に構築されたものであり、投資助言ではありません。</div>
+    <div>本ダッシュボードは投資助言ではなく、投資助言ではありません。</div>
     <div>投資判断は必ずご自身の責任で行ってください。</div>
     <div class="footer-highlight">data.json → 関係性の可視化 → 判定 の3ステップで市場を読み解く</div>
   </div>`;

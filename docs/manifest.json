@@ -1,8 +1,8 @@
 {
-  "name": "バフェット太郎 マーケットダッシュボード",
+  "name": "マーケットダッシュボード",
   "short_name": "BT Market",
-  "description": "バフェット太郎の投資判断ダッシュボード",
-  "start_url": "./index.html",
+  "description": "投資判断ダッシュボード",
+  "start_url": "./analysis.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#e9e9e9",

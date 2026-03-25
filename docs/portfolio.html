@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>バフェット太郎が考えるポートフォリオ</title>
+<title>推奨ポートフォリオ</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="BT Market">
@@ -104,7 +104,7 @@ a:hover{text-decoration:underline}
     <div class="header-left">
       <div class="logo-icon">BT</div>
       <div>
-        <div class="header-title">バフェット太郎が考えるポートフォリオ</div>
+        <div class="header-title">推奨ポートフォリオ</div>
         <div class="header-sub">マーケットデータに基づく推奨アセットアロケーション</div>
       </div>
     </div>
@@ -130,12 +130,12 @@ a:hover{text-decoration:underline}
 
 <script>
 /* ============================================================
-   バフェット太郎が考えるポートフォリオ
+   推奨ポートフォリオ
    data.json のマーケットデータに基づきアロケーションを動的に決定
    ============================================================ */
 
 // ── ポートフォリオ配分ロジック ──
-// バフェット太郎の記事に基づく投資思想:
+// 記事データに基づく投資思想:
 //   - コア: 米国株インデックス（全米 or S&P500）を中心に長期積立
 //   - サテライト: 金・金鉱株（脱ドル化・インフレヘッジ）
 //   - サテライト: ビットコイン（ポートフォリオの1〜5%）
@@ -301,7 +301,7 @@ function render(json) {
 
   let s1 = `<div class="section">
     <div class="sec-num">PORTFOLIO</div>
-    <div class="sec-title">バフェット太郎の推奨ポートフォリオ</div>
+    <div class="sec-title">推奨ポートフォリオ</div>
     <div class="sec-desc">
       マーケットデータ（シラーPER、リスクプレミアム、VIX等）に基づいて配分比率を自動で調整しています。
       バリュエーションが割高なら株式を減らして現金を厚めに持ち、割安なら株式を積極的に増やします。
@@ -446,7 +446,7 @@ function render(json) {
     <div class="commentary-header">
       <div class="commentary-avatar">BT</div>
       <div>
-        <div class="commentary-author">バフェット太郎の視点</div>
+        <div class="commentary-author">分析コメンタリー</div>
         <div class="commentary-label">ポートフォリオの考え方</div>
       </div>
     </div>
@@ -457,7 +457,7 @@ function render(json) {
 
   // ── 注意事項 ──
   main.innerHTML += `<div class="insight-box" style="margin-top:24px">
-    ⚠ 本ポートフォリオはバフェット太郎の記事における投資思想を参考に、マーケットデータに基づいて自動生成したものであり、<strong>投資助言ではありません</strong>。
+    ⚠ 本ポートフォリオはマーケットデータに基づいて自動生成したものであり、<strong>投資助言ではありません</strong>。
     配分比率はシラーPER・リスクプレミアム・VIX等の変動に応じて自動的に変わります。
     投資判断は必ずご自身の責任で行ってください。
   </div>`;
