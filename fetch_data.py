@@ -1,5 +1,5 @@
 """
-バフェット太郎 マーケットダッシュボード — データ取得スクリプト
+マーケットダッシュボード — データ取得スクリプト
 yfinance でデータを取得し、docs/data.json に保存する。
 財務省の国債金利情報CSVで日本国債利回り（10Y / 30Y）を補完取得する。
 GitHub Actions から毎日自動実行される。
@@ -364,7 +364,7 @@ def fetch_moving_averages() -> dict:
 def fetch_shiller_cape() -> dict:
     """
     シラーPER（CAPE: Cyclically Adjusted PE Ratio）を取得する。
-    バフェット太郎がバリュエーション判定で重視する指標。
+    バリュエーション判定で重視する指標。
     実績PERとは水準が大きく異なる（例: 実績PER 26倍 → シラーPER 37倍）。
 
     取得ソース（フォールバック付き）:
