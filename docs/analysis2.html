@@ -45,7 +45,6 @@
   --sans: 'DM Sans', 'Noto Sans JP', sans-serif;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-html, body { overflow-x:hidden; }
 body { font-family:var(--sans); background:var(--bg); color:var(--tx); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; font-weight:600; }
 a { color:var(--amber); text-decoration:none; font-weight:700; }
 a:hover { text-decoration:underline; }
@@ -65,7 +64,7 @@ a:hover { text-decoration:underline; }
  50%{opacity:.3} }
 
 /* Main */
-.main { max-width:960px; margin:0 auto; padding:24px 24px 60px; }
+.main { max-width:960px; margin:0 auto; padding:24px 24px 60px; overflow-x:hidden; }
 
 /* Section */
 .sec-num { font-size:15px; font-weight:700; color:var(--amber); letter-spacing:0.5px; margin-bottom:4px; }
