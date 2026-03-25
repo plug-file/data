@@ -6,9 +6,9 @@
 <meta name="robots" content="noindex, nofollow">
 <title>バフェット太郎の投資判断ダッシュボード — Part 2</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="BT Market">
-<meta name="theme-color" content="#d97706">
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -45,6 +45,7 @@
   --sans: 'DM Sans', 'Noto Sans JP', sans-serif;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
+html, body { overflow-x:hidden; }
 body { font-family:var(--sans); background:var(--bg); color:var(--tx); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; font-weight:600; }
 a { color:var(--amber); text-decoration:none; font-weight:700; }
 a:hover { text-decoration:underline; }
@@ -90,11 +91,13 @@ a:hover { text-decoration:underline; }
 .section { margin-bottom:40px; }
 
 /* Grid */
-.grid-2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(440px,1fr)); gap:16px; }
+.grid-2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(440px,100%),1fr)); gap:16px; }
 .grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; }
 
 /* Asset Card */
 .asset-card {
+  overflow:hidden;
+  min-width:0;
   background:var(--card); border:1px solid var(--border);
   border-radius:12px; padding:22px 24px;
   box-shadow:0 1px 3px rgba(0,0,0,0.04);
@@ -221,7 +224,7 @@ a:hover { text-decoration:underline; }
     <div class="header-right">
       <div class="updated-time"><div class="live-dot"></div><span id="updatedAt">読み込み中…</span></div>
       <div class="nav-back">
-        <a href="index.html">← マーケットインフォ</a>
+        <a href="data.html">← マーケットインフォ</a>
         <span style="margin:0 6px;color:var(--t4)">|</span>
         <a href="analysis.html">分析 Part 1</a>
       </div>
@@ -799,29 +802,29 @@ load();
 <style>
 .tab-bar {
   position:fixed;bottom:0;left:0;right:0;z-index:9999;
-  background:rgba(255,255,255,0.96);
+  background:rgba(20,20,20,0.97);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-  border-top:1px solid #e0e0db;
+  border-top:1px solid rgba(255,255,255,0.08);
   display:flex;justify-content:space-around;align-items:center;
   padding:10px 0 calc(10px + env(safe-area-inset-bottom));
   font-family:'DM Sans','Noto Sans JP',sans-serif;
 }
 .tab-item {
   display:flex;align-items:center;justify-content:center;
-  text-decoration:none;color:#b0b0a8;
+  text-decoration:none;color:rgba(255,255,255,0.4);
   width:48px;height:48px;border-radius:14px;
   transition:color .15s,background .15s;
 }
-.tab-item:hover { color:#b45309;background:rgba(245,158,11,0.08); }
+.tab-item:hover { color:#fff;background:rgba(255,255,255,0.08); }
 .tab-item svg { transition:transform .15s; }
-.tab-active { color:#b45309 !important; }
+.tab-active { color:#fff !important; }
 .tab-active svg { transform:scale(1.1); }
 body { padding-bottom:80px !important; }
 </style>
 <nav class="tab-bar" id="pwaTabBar">
     <a href="analysis.html" class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></a>
     <a href="analysis2.html" class="tab-item tab-active"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
-    <a href="index.html" class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></a>
+    <a href="data.html" class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></a>
     <a href="portfolio.html" class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></a>
     
 </nav>
