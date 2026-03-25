@@ -273,9 +273,9 @@ a:hover { text-decoration:underline; }
 .hd-sub{font-size:10px;color:#999;font-weight:500}
 .hd-upd{
   font-family:'DM Mono','IBM Plex Mono','Menlo',monospace;
-  font-size:10px;color:#999;
+  font-size:13px;color:#777;
   background:#e9e9e9;border:1px solid #e0e0db;
-  padding:4px 10px;border-radius:8px;
+  padding:5px 12px;border-radius:8px;
 }
 @media(max-width:640px){
   .hd{padding:0 12px;height:50px}
@@ -549,7 +549,7 @@ function render(json) {
   const a = analyze(d);
 
   // Updated time
-  document.getElementById('updatedAt').textContent = (json.updated_jst || json.updated_at || '').replace(/\s*JST\s*/g, '');
+  document.getElementById('updatedAt').textContent = (json.updated_jst||json.updated_at||'').replace(/\s*JST\s*/g,'').replace(/^\d{4}年/,'').replace(/(\d+)月(\d+)日\s*/,(m,a,b)=>parseInt(a)+'/'+parseInt(b)+' ');
 
   // Verdict banner
   const banner = document.getElementById('verdictBanner');
@@ -1079,9 +1079,9 @@ body { padding-bottom:80px !important; }
 .hd-sub{font-size:10px;color:#999;font-weight:500}
 .hd-upd{
   font-family:'DM Mono','IBM Plex Mono','Menlo',monospace;
-  font-size:10px;color:#999;
+  font-size:13px;color:#777;
   background:#e9e9e9;border:1px solid #e0e0db;
-  padding:4px 10px;border-radius:8px;
+  padding:5px 12px;border-radius:8px;
 }
 @media(max-width:640px){
   .hd{padding:0 12px;height:50px}
