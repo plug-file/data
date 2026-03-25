@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>バフェット太郎の投資判断ダッシュボード</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BT Market">
+<meta name="theme-color" content="#d97706">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1023,5 +1029,41 @@ async function load() {
 
 load();
 </script>
+
+
+<!-- PWA Tab Bar -->
+<style>
+.tab-bar {
+  position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  background:rgba(255,255,255,0.96);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid #e0e0db;
+  display:flex;justify-content:space-around;align-items:center;
+  padding:10px 0 calc(10px + env(safe-area-inset-bottom));
+  font-family:'DM Sans','Noto Sans JP',sans-serif;
+}
+.tab-item {
+  display:flex;align-items:center;justify-content:center;
+  text-decoration:none;color:#b0b0a8;
+  width:48px;height:48px;border-radius:14px;
+  transition:color .15s,background .15s;
+}
+.tab-item:hover { color:#b45309;background:rgba(245,158,11,0.08); }
+.tab-item svg { transition:transform .15s; }
+.tab-active { color:#b45309 !important; }
+.tab-active svg { transform:scale(1.1); }
+body { padding-bottom:80px !important; }
+</style>
+<nav class="tab-bar" id="pwaTabBar">
+    <a href="analysis.html" class="tab-item tab-active"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></a>
+    <a href="analysis2.html" class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
+    <a href="index.html" class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></a>
+    <a href="portfolio.html" class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></a>
+    
+</nav>
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+
 </body>
 </html>
