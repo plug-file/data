@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>バフェット太郎が考えるポートフォリオ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#e9e9e9;--white:#fff;--card:#fff;--border:#e0e0db;
+  --tx:#1a1a1a;--t2:#444;--t3:#777;--t4:#999;
+  --amber:#b45309;--amber-bg:#fef3c7;--amber-bd:#fde68a;
+  --green:#16a34a;--green-bg:#dcfce7;
+  --red:#dc2626;--red-bg:#fef2f2;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --mono:'DM Mono',monospace;--sans:'DM Sans','Noto Sans JP',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;font-size:16px;line-height:1.6;font-weight:600}
+a{color:var(--amber);text-decoration:none;font-weight:700}
+a:hover{text-decoration:underline}
+
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:14px 24px}
+.header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo-icon{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;font-family:var(--mono);flex-shrink:0}
+.header-title{font-size:18px;font-weight:700;letter-spacing:-0.5px}
+.header-sub{font-size:12px;color:var(--t3);margin-top:1px;font-weight:600}
+.header-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.nav-back{font-size:13px;color:var(--t3);font-weight:600}
+.updated-time{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--t3);background:var(--bg);border:1px solid var(--border);padding:4px 10px;border-radius:6px;font-weight:600;white-space:nowrap}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.main{max-width:960px;margin:0 auto;padding:24px 24px 60px}
+.section{margin-bottom:40px}
+.sec-num{font-size:15px;font-weight:700;color:var(--amber);letter-spacing:0.5px;margin-bottom:4px}
+.sec-title{font-size:20px;font-weight:700;margin-bottom:8px}
+.sec-desc{font-size:15px;color:var(--t2);margin-bottom:20px;line-height:1.8;max-width:720px;font-weight:600}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+
+/* Pie Chart */
+.pie-wrap{display:flex;gap:32px;align-items:center;flex-wrap:wrap;justify-content:center}
+.pie-svg-wrap{flex-shrink:0}
+.pie-legend{display:flex;flex-direction:column;gap:6px;min-width:220px}
+.pie-legend-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:default;transition:background .15s}
+.pie-legend-item:hover{background:var(--bg)}
+.pie-legend-dot{width:14px;height:14px;border-radius:4px;flex-shrink:0}
+.pie-legend-name{font-size:14px;font-weight:700;flex:1}
+.pie-legend-pct{font-size:18px;font-weight:700;font-family:var(--mono)}
+
+/* Allocation Table */
+.alloc-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:16px}
+.alloc-table th{text-align:left;padding:10px 12px;color:#666;font-weight:700;font-size:12px;border-bottom:2px solid var(--border);letter-spacing:0.5px}
+.alloc-table td{padding:10px 12px;border-bottom:1px solid #f0f0eb;font-weight:600}
+.alloc-table tr:last-child td{border-bottom:none}
+.alloc-bar{height:8px;border-radius:4px;transition:width .6s ease}
+
+/* Commentary */
+.commentary-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-top:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.commentary-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.commentary-avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;font-family:var(--mono);flex-shrink:0}
+.commentary-author{font-size:15px;font-weight:700}
+.commentary-label{font-size:11px;color:var(--t3);font-weight:600}
+.commentary-body{font-size:15px;color:var(--t2);line-height:2.0;font-weight:600}
+.commentary-body strong{color:var(--tx);font-weight:700}
+
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;line-height:1.4}
+.tag.core{background:#eff6ff;color:#2563eb}
+.tag.satellite{background:#fef3c7;color:#b45309}
+.tag.hedge{background:#f0fdf4;color:#16a34a}
+
+.insight-box{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:14px 18px;margin-top:14px;font-size:14px;color:var(--amber);line-height:1.7;font-weight:700}
+
+.footer{text-align:center;padding:28px 0;border-top:1px solid var(--border);font-size:13px;color:var(--t3);line-height:1.9;font-weight:600}
+.footer-highlight{color:var(--t2);margin-top:8px;font-weight:700}
+
+.loading{text-align:center;padding:60px 20px;color:var(--t3);font-weight:700;font-size:15px}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:640px){
+  .header{padding:12px 16px}
+  .header-inner{flex-direction:column;align-items:flex-start;gap:8px}
+  .main{padding:16px 16px 48px}
+  .pie-wrap{flex-direction:column;align-items:center}
+  .pie-legend{min-width:auto;width:100%}
+  body{font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="logo-icon">BT</div>
+      <div>
+        <div class="header-title">バフェット太郎が考えるポートフォリオ</div>
+        <div class="header-sub">マーケットデータに基づく推奨アセットアロケーション</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="updated-time"><div class="live-dot"></div><span id="updatedAt">読み込み中…</span></div>
+      <div class="nav-back">
+        <a href="index.html">← マーケットインフォ</a>
+        <span style="margin:0 6px;color:var(--t4)">|</span>
+        <a href="analysis.html">分析1</a>
+        <span style="margin:0 4px;color:var(--t4)">|</span>
+        <a href="analysis2.html">分析2</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="mainContent">
+  <div class="loading" id="loadingState">
+    <div class="loading-spinner"></div>
+    data.json を読み込んでいます…
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   バフェット太郎が考えるポートフォリオ
+   data.json のマーケットデータに基づきアロケーションを動的に決定
+   ============================================================ */
+
+// ── ポートフォリオ配分ロジック ──
+// バフェット太郎の記事に基づく投資思想:
+//   - コア: 米国株インデックス（全米 or S&P500）を中心に長期積立
+//   - サテライト: 金・金鉱株（脱ドル化・インフレヘッジ）
+//   - サテライト: ビットコイン（ポートフォリオの1〜5%）
+//   - 現金: バリュエーションが割高なら厚めに持つ（バフェットに倣う）
+//   - 将来的にグローバルサウスへのシフトも視野
+
+function buildPortfolio(json) {
+  // データ抽出
+  const tnx = json.rates?.find(r => r.symbol === '^TNX');
+  const bond10y = tnx?.price ?? 4.25;
+
+  const capeObj = json.shiller_cape;
+  const hasCape = capeObj?.ok && capeObj?.price != null;
+  const perObj = json.sp500_pe;
+  const per = perObj?.price ?? 26.5;
+  const shillerPer = hasCape ? capeObj.price : (per * 1.43);
+  const earningsYield = hasCape ? (100 / shillerPer) : (100 / per);
+  const riskPremium = earningsYield - bond10y;
+
+  const vix = json.vix?.price ?? 18;
+  const sp = json.indices?.find(i => i.symbol === '^GSPC');
+  const spFromHigh = sp?.from_high ?? -5;
+
+  const gold = json.commodities?.find(c => c.symbol === 'GC=F');
+  const btc = json.crypto?.find(c => c.symbol === 'BTC-USD');
+
+  // ── 配分決定ロジック ──
+  // 基本配分（ベースライン）
+  let usEquity = 60;    // 米国株インデックス
+  let goldAlloc = 15;   // 金・金鉱株
+  let btcAlloc = 3;     // ビットコイン
+  let globalSouth = 5;  // グローバルサウス（新興国）
+  let bonds = 7;        // 米国債
+  let cash = 10;        // 現金
+
+  // バリュエーション調整
+  // シラーPER 30超 → 株式を減らし現金を増やす（バブル警戒）
+  if (shillerPer >= 40) {
+    usEquity -= 15; cash += 10; bonds += 5;
+  } else if (shillerPer >= 35) {
+    usEquity -= 10; cash += 7; bonds += 3;
+  } else if (shillerPer >= 30) {
+    usEquity -= 5; cash += 3; bonds += 2;
+  } else if (shillerPer < 20) {
+    usEquity += 10; cash -= 5; bonds -= 5;
+  } else if (shillerPer < 25) {
+    usEquity += 5; cash -= 3; bonds -= 2;
+  }
+
+  // リスクプレミアムがマイナス → 債券が株より魅力的
+  if (riskPremium < -1) {
+    usEquity -= 5; bonds += 5;
+  } else if (riskPremium < 0) {
+    usEquity -= 3; bonds += 3;
+  } else if (riskPremium > 3) {
+    usEquity += 5; bonds -= 3; cash -= 2;
+  }
+
+  // VIX 30超 → パニック局面。現金を厚めに
+  if (vix > 40) {
+    usEquity -= 5; cash += 5;
+  } else if (vix > 30) {
+    usEquity -= 3; cash += 3;
+  }
+
+  // 高値からの下落幅が大きい → 押し目買いの好機で株式を増やす
+  if (spFromHigh < -20) {
+    usEquity += 10; cash -= 5; bonds -= 5;
+  } else if (spFromHigh < -10) {
+    usEquity += 5; cash -= 3; bonds -= 2;
+  }
+
+  // 最低値の制約
+  usEquity = Math.max(30, Math.min(80, usEquity));
+  goldAlloc = Math.max(5, Math.min(25, goldAlloc));
+  btcAlloc = Math.max(1, Math.min(5, btcAlloc));
+  globalSouth = Math.max(0, Math.min(15, globalSouth));
+  bonds = Math.max(0, Math.min(25, bonds));
+  cash = Math.max(2, Math.min(30, cash));
+
+  // 合計100%に正規化
+  const total = usEquity + goldAlloc + btcAlloc + globalSouth + bonds + cash;
+  usEquity = Math.round(usEquity / total * 100);
+  goldAlloc = Math.round(goldAlloc / total * 100);
+  btcAlloc = Math.round(btcAlloc / total * 100);
+  globalSouth = Math.round(globalSouth / total * 100);
+  bonds = Math.round(bonds / total * 100);
+  cash = 100 - usEquity - goldAlloc - btcAlloc - globalSouth - bonds;
+
+  return {
+    allocations: [
+      { name:'米国株インデックス',    pct:usEquity,    color:'#2563eb', detail:'全米株式 or S&P500 インデックスファンド（新NISA つみたて投資枠）', tag:'core',      etf:'VTI / VOO' },
+      { name:'金・金鉱株',            pct:goldAlloc,   color:'#d4a017', detail:'金ETF（GLD / IAU）または金鉱株ETF（GDX）', tag:'satellite', etf:'GLD / GDX' },
+      { name:'米国債',                pct:bonds,       color:'#7c3aed', detail:'米国中期債ETF。金利低下局面でキャピタルゲインも狙える', tag:'satellite', etf:'IEF / TLT' },
+      { name:'グローバルサウス',      pct:globalSouth, color:'#059669', detail:'インド・ブラジル・東南アジアなど新興国ETF。次のブームの震源地', tag:'satellite', etf:'EPI / EEM' },
+      { name:'ビットコイン',          pct:btcAlloc,    color:'#f7931a', detail:'ポートフォリオの1〜5%の範囲内。半減期サイクルに注目', tag:'hedge',     etf:'BTC現物' },
+      { name:'現金（キャッシュ）',    pct:cash,        color:'#94a3b8', detail:'調整局面での押し目買い用。MMFや短期国債で運用', tag:'hedge',     etf:'MMF / SHV' },
+    ],
+    params: { shillerPer, earningsYield, bond10y, riskPremium, vix, spFromHigh, hasCape }
+  };
+}
+
+// ── 円グラフ描画（SVG） ──
+function renderPieChart(allocations) {
+  const size = 280;
+  const cx = size / 2, cy = size / 2, r = 110;
+  let startAngle = -90; // 12時位置から開始
+
+  let paths = '';
+  let labels = '';
+
+  allocations.forEach((a, i) => {
+    if (a.pct <= 0) return;
+    const angle = (a.pct / 100) * 360;
+    const endAngle = startAngle + angle;
+    const largeArc = angle > 180 ? 1 : 0;
+
+    const x1 = cx + r * Math.cos((startAngle * Math.PI) / 180);
+    const y1 = cy + r * Math.sin((startAngle * Math.PI) / 180);
+    const x2 = cx + r * Math.cos((endAngle * Math.PI) / 180);
+    const y2 = cy + r * Math.sin((endAngle * Math.PI) / 180);
+
+    paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z"
+      fill="${a.color}" stroke="#fff" stroke-width="2"
+      style="transition:opacity .2s" onmouseenter="this.style.opacity=0.8" onmouseleave="this.style.opacity=1"/>`;
+
+    // ラベル位置（円弧の中間点）
+    const midAngle = startAngle + angle / 2;
+    const labelR = r * 0.65;
+    const lx = cx + labelR * Math.cos((midAngle * Math.PI) / 180);
+    const ly = cy + labelR * Math.sin((midAngle * Math.PI) / 180);
+
+    if (a.pct >= 5) {
+      labels += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central"
+        fill="#fff" font-size="14" font-weight="700" font-family="'DM Mono',monospace"
+        style="pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.3)">${a.pct}%</text>`;
+    }
+
+    startAngle = endAngle;
+  });
+
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+    ${paths}${labels}
+  </svg>`;
+}
+
+// ── メインレンダリング ──
+function render(json) {
+  document.getElementById('updatedAt').textContent = json.updated_jst || json.updated_at || '';
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+
+  const { allocations, params } = buildPortfolio(json);
+
+  // ── SECTION 01: ポートフォリオ概要 ──
+  const tagLabel = { core:'コア', satellite:'サテライト', hedge:'ヘッジ' };
+  let legendHtml = allocations.map(a => a.pct > 0 ? `
+    <div class="pie-legend-item">
+      <div class="pie-legend-dot" style="background:${a.color}"></div>
+      <div class="pie-legend-name">${a.name}</div>
+      <div class="pie-legend-pct" style="color:${a.color}">${a.pct}%</div>
+    </div>` : '').join('');
+
+  let s1 = `<div class="section">
+    <div class="sec-num">PORTFOLIO</div>
+    <div class="sec-title">バフェット太郎の推奨ポートフォリオ</div>
+    <div class="sec-desc">
+      マーケットデータ（シラーPER、リスクプレミアム、VIX等）に基づいて配分比率を自動で調整しています。
+      バリュエーションが割高なら株式を減らして現金を厚めに持ち、割安なら株式を積極的に増やします。
+    </div>
+    <div class="card">
+      <div class="pie-wrap">
+        <div class="pie-svg-wrap">${renderPieChart(allocations)}</div>
+        <div class="pie-legend">${legendHtml}</div>
+      </div>
+    </div>
+  </div>`;
+  main.innerHTML += s1;
+
+  // ── SECTION 02: 配分詳細テーブル ──
+  let tableRows = allocations.map(a => {
+    if (a.pct <= 0) return '';
+    const tagCls = a.tag;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:10px;height:10px;border-radius:3px;background:${a.color};flex-shrink:0"></div>
+        <span style="font-weight:700">${a.name}</span>
+      </div></td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:700;font-size:18px;color:${a.color}">${a.pct}%</td>
+      <td><div class="alloc-bar" style="width:${a.pct}%;background:${a.color};max-width:200px"></div></td>
+      <td><span class="tag ${tagCls}">${tagLabel[a.tag]}</span></td>
+      <td style="font-size:13px;color:var(--t3)">${a.etf}</td>
+    </tr>`;
+  }).join('');
+
+  let s2 = `<div class="section">
+    <div class="sec-num">DETAIL</div>
+    <div class="sec-title">配分詳細</div>
+    <div class="card" style="overflow-x:auto">
+      <table class="alloc-table">
+        <thead><tr>
+          <th>アセット</th><th style="text-align:right">配分</th><th>バー</th><th>区分</th><th>具体的な商品例</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+  </div>`;
+  main.innerHTML += s2;
+
+  // ── SECTION 03: 各アセットの解説 ──
+  let detailCards = allocations.map(a => {
+    if (a.pct <= 0) return '';
+    return `<div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:16px;height:16px;border-radius:4px;background:${a.color}"></div>
+        <span style="font-size:16px;font-weight:700">${a.name}</span>
+        <span class="tag ${a.tag}" style="margin-left:auto">${tagLabel[a.tag]} ${a.pct}%</span>
+      </div>
+      <div style="font-size:14px;color:var(--t2);line-height:1.8;font-weight:600">${a.detail}</div>
+    </div>`;
+  }).join('');
+
+  let s3 = `<div class="section">
+    <div class="sec-num">BREAKDOWN</div>
+    <div class="sec-title">各アセットの解説</div>
+    ${detailCards}
+  </div>`;
+  main.innerHTML += s3;
+
+  // ── SECTION 04: 判定パラメーター ──
+  const rpColor = params.riskPremium >= 0 ? '#16a34a' : '#dc2626';
+  const capeLabel = params.hasCape ? 'シラーPER（CAPE）' : '推定シラーPER';
+
+  let s4 = `<div class="section">
+    <div class="sec-num">PARAMETERS</div>
+    <div class="sec-title">配分を決定したマーケットデータ</div>
+    <div class="sec-desc">以下の指標に基づいてポートフォリオの配分比率を自動調整しています。</div>
+    <div class="card" style="overflow-x:auto">
+      <table class="alloc-table">
+        <thead><tr><th>指標</th><th style="text-align:right">現在値</th><th>配分への影響</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700">${capeLabel}</td>
+            <td style="text-align:right;font-family:var(--mono);font-weight:700">${params.shillerPer.toFixed(1)}倍</td>
+            <td style="font-size:13px;color:var(--t3)">${params.shillerPer >= 35 ? '割高 → 株式配分を大幅に削減' : params.shillerPer >= 30 ? '割高 → 株式配分を削減' : params.shillerPer < 20 ? '割安 → 株式配分を大幅に増加' : '適正〜やや割高'}</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700">リスクプレミアム</td>
+            <td style="text-align:right;font-family:var(--mono);font-weight:700;color:${rpColor}">${params.riskPremium >= 0 ? '+' : ''}${params.riskPremium.toFixed(2)}%</td>
+            <td style="font-size:13px;color:var(--t3)">${params.riskPremium < 0 ? 'マイナス → 債券が株より魅力的。債券比率を上げる' : 'プラス → 株式が相対的に魅力的'}</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700">米10年債利回り</td>
+            <td style="text-align:right;font-family:var(--mono);font-weight:700">${params.bond10y.toFixed(2)}%</td>
+            <td style="font-size:13px;color:var(--t3)">益回りとの比較で株式の魅力度を判定</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700">VIX（恐怖指数）</td>
+            <td style="text-align:right;font-family:var(--mono);font-weight:700">${params.vix.toFixed(1)}</td>
+            <td style="font-size:13px;color:var(--t3)">${params.vix > 30 ? '30超 → パニック警戒。現金比率を上げる' : '安定的な水準'}</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700">S&P500 52週高値比</td>
+            <td style="text-align:right;font-family:var(--mono);font-weight:700">${params.spFromHigh.toFixed(1)}%</td>
+            <td style="font-size:13px;color:var(--t3)">${params.spFromHigh < -10 ? '大幅下落 → 押し目買いの好機で株式を増加' : '高値圏で推移'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+  main.innerHTML += s4;
+
+  // ── コメンタリー ──
+  const usAlloc = allocations.find(a => a.name.includes('米国株'));
+  const cashAlloc = allocations.find(a => a.name.includes('現金'));
+
+  let body = `ぼくはこれまで繰り返し述べてきましたが、
+  老後の資産形成を成功させたいだけなら、<strong>新NISAで全米株式インデックスファンドに毎月一定額の積立投資をすればいい</strong>だけです。
+  これが個人投資家の99%にとって最適解であり、ぼくのポートフォリオもそれを反映しています。<br><br>
+
+  現在のシラーPER（CAPE）は<strong>${params.shillerPer.toFixed(1)}倍</strong>で、
+  リスクプレミアムは<strong>${params.riskPremium >= 0 ? '+' : ''}${params.riskPremium.toFixed(2)}%</strong>です。`;
+
+  if (params.shillerPer >= 35) {
+    body += `バリュエーションは歴史的に見てかなり割高な水準にあるため、米国株の配分を<strong>${usAlloc.pct}%</strong>に抑え、
+    現金を<strong>${cashAlloc.pct}%</strong>と厚めに確保しています。
+    著名投資家ウォーレン・バフェットがバークシャーの手元資金を総資産の3割に積み上げたのと同じ考え方です。`;
+  } else if (params.shillerPer >= 30) {
+    body += `バリュエーションはやや割高な水準にあるため、株式配分をやや抑えめにし、現金を<strong>${cashAlloc.pct}%</strong>確保しています。`;
+  } else {
+    body += `バリュエーションは適正〜割安な水準にあるため、株式に<strong>${usAlloc.pct}%</strong>と積極的な配分にしています。`;
+  }
+
+  body += `<br><br>
+  金・金鉱株には<strong>${allocations.find(a => a.name.includes('金')).pct}%</strong>を配分しています。
+  過去20年で金は6.2倍と、S&P500の4.8倍を上回るパフォーマンスです。
+  米国政府の債務残高が膨張を続ける中、「脱ドル化」の流れが金の長期的な追い風になるとぼくは考えています。<br><br>
+
+  ビットコインには<strong>${allocations.find(a => a.name.includes('ビットコイン')).pct}%</strong>を配分しています。
+  ぼくはビットコイン信者ではないけれど、ポートフォリオの1〜5%の範囲内で投資することを推奨しています。
+  暗号資産は50%以上の暴落が頻繁に起きる資産クラスですから、投資額を限定することでリスクをコントロールすることが重要です。<br><br>
+
+  グローバルサウスには<strong>${allocations.find(a => a.name.includes('グローバル')).pct}%</strong>を配分しています。
+  米国株の時代は景気後退とともに終わる可能性があり、次の景気拡大局面では新興国への投資がブームになるかもしれません。
+  現時点では小さなポジションから始め、タイミングを見て増やしていく戦略です。`;
+
+  let commentaryHtml = `<div class="commentary-box">
+    <div class="commentary-header">
+      <div class="commentary-avatar">BT</div>
+      <div>
+        <div class="commentary-author">バフェット太郎の視点</div>
+        <div class="commentary-label">ポートフォリオの考え方</div>
+      </div>
+    </div>
+    <div class="commentary-body">${body}</div>
+  </div>`;
+
+  main.innerHTML += commentaryHtml;
+
+  // ── 注意事項 ──
+  main.innerHTML += `<div class="insight-box" style="margin-top:24px">
+    ⚠ 本ポートフォリオはバフェット太郎の記事における投資思想を参考に、マーケットデータに基づいて自動生成したものであり、<strong>投資助言ではありません</strong>。
+    配分比率はシラーPER・リスクプレミアム・VIX等の変動に応じて自動的に変わります。
+    投資判断は必ずご自身の責任で行ってください。
+  </div>`;
+
+  // ── Footer ──
+  main.innerHTML += `<div class="footer">
+    <div>コア＆サテライト戦略 — 米国株インデックスを軸に、金・暗号資産・新興国で分散</div>
+    <div class="footer-highlight">
+      <a href="analysis.html">分析 Part 1</a> ｜ <a href="analysis2.html">分析 Part 2</a> ｜ <a href="index.html">マーケットインフォ</a>
+    </div>
+  </div>`;
+}
+
+// ── ロード ──
+async function load() {
+  try {
+    const r = await fetch('data.json?t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    render(await r.json());
+  } catch (e) {
+    console.error(e);
+    document.getElementById('mainContent').innerHTML =
+      '<div style="text-align:center;padding:60px 20px;color:#ef4444">⚠ data.json の読み込みに失敗しました。</div>';
+  }
+}
+load();
+</script>
+</body>
+</html>
