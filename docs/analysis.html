@@ -44,26 +44,15 @@ body { font-family:var(--sans); background:var(--bg); color:var(--tx); -webkit-f
 a { color:var(--amber); text-decoration:none; font-weight:700; }
 a:hover { text-decoration:underline; }
 
-/* Header */
-.header {
-  background:var(--white);
-  border-bottom:1px solid var(--border);
-  padding:14px 24px;
-}
-.header-inner { max-width:960px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.header-left { display:flex; align-items:center; gap:12px; }
-.logo-icon {
-  width:36px; height:36px; border-radius:8px;
-  background:linear-gradient(135deg,#f59e0b,#d97706);
-  display:flex; align-items:center; justify-content:center;
-  font-size:16px; font-weight:700; color:#fff; font-family:var(--mono);
-  flex-shrink:0;
-}
-.header-title { font-size:18px; font-weight:700; letter-spacing:-0.5px; color:var(--tx); }
-.header-sub { font-size:12px; color:var(--t3); margin-top:1px; font-weight:600; }
-.header-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
-.nav-back { font-size:13px; color:var(--t3); font-weight:600; }
-.nav-back a { color:var(--amber); }
+
+
+
+
+
+
+
+
+
 
 /* Verdict Banner */
 .verdict-banner {
@@ -96,15 +85,9 @@ a:hover { text-decoration:underline; }
 .verdict-tag.bullish { background:#dcfce7; color:#15803d; }
 .verdict-tag.bearish { background:#fef2f2; color:#dc2626; }
 
-/* Updated time */
-.updated-time {
-  display:inline-flex; align-items:center; gap:5px;
-  font-family:var(--mono); font-size:11px; color:var(--t3);
-  background:var(--bg); border:1px solid var(--border);
-  padding:4px 10px; border-radius:6px; font-weight:600; white-space:nowrap;
-}
-.live-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+
+ 50%{opacity:.3} }
 
 /* Main */
 .main { max-width:960px; margin:0 auto; padding:24px 24px 60px; }
@@ -256,40 +239,62 @@ a:hover { text-decoration:underline; }
 
 /* Responsive */
 @media (max-width:640px) {
-  .header { padding:12px 16px; }
-  .header-inner { flex-direction:column; align-items:flex-start; gap:8px; }
-  .header-right { width:100%; justify-content:space-between; }
+  
+  
   .verdict-banner { flex-direction:column; gap:14px; }
   .verdict-left { min-width:auto; }
   .verdict-right { border-left:none; padding-left:0; border-top:1px solid var(--border); padding-top:14px; }
   .main { padding:16px 16px 48px; }
-  .header-title { font-size:16px; }
+  
   .verdict-value { font-size:28px; }
   .gauge-value { font-size:28px; }
   .yield-bar-val { font-size:16px; }
   .grid-3 { grid-template-columns:1fr; }
   body { font-size:15px; }
 }
+/* ── HEADER ── */
+.hd{
+  background:#fff;
+  border-bottom:1px solid #e0e0db;
+  position:sticky;top:0;z-index:100;
+  padding:0 24px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.hd-logo{display:flex;align-items:center;gap:10px}
+.hd-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:#2e7d32;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:18px;font-weight:700;
+  font-family:'DM Mono','IBM Plex Mono','Menlo',monospace;
+}
+.hd-text{display:flex;flex-direction:column;line-height:1.2}
+.hd-title{font-size:15px;font-weight:700;color:#1a1a1a;letter-spacing:-.02em}
+.hd-sub{font-size:10px;color:#999;font-weight:500}
+.hd-upd{
+  font-family:'DM Mono','IBM Plex Mono','Menlo',monospace;
+  font-size:10px;color:#999;
+  background:#e9e9e9;border:1px solid #e0e0db;
+  padding:4px 10px;border-radius:8px;
+}
+@media(max-width:640px){
+  .hd{padding:0 12px;height:50px}
+}
+
 </style>
 </head>
 <body>
 
-<!-- Header -->
-<div class="header">
-  <div class="header-inner">
-    <div class="header-left">
-      <div class="logo-icon">BT</div>
-      <div>
-        <div class="header-title">投資判断ダッシュボード</div>
-        <div class="header-sub">数字と数字の「関係性」から市場を読み解く</div>
-      </div>
-    </div>
-    <div class="header-right">
-      <div class="updated-time"><div class="live-dot"></div><span id="updatedAt">読み込み中…</span></div>
-      <div class="nav-back"><a href="data.html">← マーケットインフォ</a></div>
+<header class="hd">
+  <div class="hd-logo">
+    <div class="hd-icon">B</div>
+    <div class="hd-text">
+      <span class="hd-title">ANALYSIS</span>
+      <span class="hd-sub">投資判断ダッシュボード</span>
     </div>
   </div>
-</div>
+  <div class="hd-upd" id="updatedAt">読み込み中…</div>
+</header>
 
 <!-- Verdict Banner -->
 <div style="padding:0 24px">
@@ -544,7 +549,7 @@ function render(json) {
   const a = analyze(d);
 
   // Updated time
-  document.getElementById('updatedAt').textContent = json.updated_jst || json.updated_at || '';
+  document.getElementById('updatedAt').textContent = (json.updated_jst || json.updated_at || '').replace(/\s*JST\s*/g, '');
 
   // Verdict banner
   const banner = document.getElementById('verdictBanner');
@@ -1053,6 +1058,35 @@ load();
 .tab-active { color:#fff !important; }
 .tab-active svg { transform:scale(1.1); }
 body { padding-bottom:80px !important; }
+/* ── HEADER ── */
+.hd{
+  background:#fff;
+  border-bottom:1px solid #e0e0db;
+  position:sticky;top:0;z-index:100;
+  padding:0 24px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.hd-logo{display:flex;align-items:center;gap:10px}
+.hd-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:#2e7d32;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:18px;font-weight:700;
+  font-family:'DM Mono','IBM Plex Mono','Menlo',monospace;
+}
+.hd-text{display:flex;flex-direction:column;line-height:1.2}
+.hd-title{font-size:15px;font-weight:700;color:#1a1a1a;letter-spacing:-.02em}
+.hd-sub{font-size:10px;color:#999;font-weight:500}
+.hd-upd{
+  font-family:'DM Mono','IBM Plex Mono','Menlo',monospace;
+  font-size:10px;color:#999;
+  background:#e9e9e9;border:1px solid #e0e0db;
+  padding:4px 10px;border-radius:8px;
+}
+@media(max-width:640px){
+  .hd{padding:0 12px;height:50px}
+}
+
 </style>
 <nav class="tab-bar" id="pwaTabBar">
     <a href="analysis.html" class="tab-item tab-active"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></a>
