@@ -29,7 +29,7 @@
   --radius:20px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:var(--sans);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5;max-width:960px;margin:0 auto}
 
 /* ── HEADER ── */
 .hd{
@@ -585,6 +585,7 @@ load();
 <style>
 .tab-bar {
   position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  max-width:960px;margin:0 auto;
   background:rgba(20,20,20,0.97);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-top:1px solid rgba(255,255,255,0.08);
