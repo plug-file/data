@@ -1,7 +1,8 @@
-const CACHE_NAME = 'bt-market-v1';
+const CACHE_NAME = 'bt-market-v3';
 const ASSETS = [
   './',
   './index.html',
+  './data.html',
   './analysis.html',
   './analysis2.html',
   './portfolio.html',
