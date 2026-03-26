@@ -49,7 +49,8 @@ a:hover{text-decoration:underline}
 
 /* Pie Chart */
 .pie-wrap{display:flex;gap:32px;align-items:center;flex-wrap:wrap;justify-content:center}
-.pie-svg-wrap{flex-shrink:0}
+.pie-svg-wrap{flex-shrink:0;max-width:100%}
+.pie-svg-wrap svg{width:100%;height:auto;max-width:448px}
 .pie-legend{display:flex;flex-direction:column;gap:6px;min-width:220px}
 .pie-legend-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:default;transition:background .15s}
 .pie-legend-item:hover{background:var(--bg)}
@@ -245,12 +246,12 @@ function buildPortfolio(json) {
 
   return {
     allocations: [
-      { name:'米国株インデックス',    pct:usEquity,    color:'#2563eb', detail:'全米株式 or S&P500 インデックスファンド（新NISA つみたて投資枠）', tag:'core',      etf:'VTI / VOO' },
-      { name:'金・金鉱株',            pct:goldAlloc,   color:'#d4a017', detail:'金ETF（GLD / IAU）または金鉱株ETF（GDX）', tag:'satellite', etf:'GLD / GDX' },
-      { name:'米国債',                pct:bonds,       color:'#7c3aed', detail:'米国中期債ETF。金利低下局面でキャピタルゲインも狙える', tag:'satellite', etf:'IEF / TLT' },
-      { name:'グローバルサウス',      pct:globalSouth, color:'#059669', detail:'インド・ブラジル・東南アジアなど新興国ETF。次のブームの震源地', tag:'satellite', etf:'EPI / EEM' },
-      { name:'ビットコイン',          pct:btcAlloc,    color:'#f7931a', detail:'ポートフォリオの1〜5%の範囲内。半減期サイクルに注目', tag:'hedge',     etf:'BTC現物' },
-      { name:'現金（キャッシュ）',    pct:cash,        color:'#94a3b8', detail:'調整局面での押し目買い用。MMFや短期国債で運用', tag:'hedge',     etf:'MMF / SHV' },
+      { name:'米国株インデックス',    pct:usEquity,    color:'#3b82f6', detail:'全米株式 or S&P500 インデックスファンド（新NISA つみたて投資枠）', tag:'core',      etf:'VTI / VOO' },
+      { name:'金・金鉱株',            pct:goldAlloc,   color:'#eab308', detail:'金ETF（GLD / IAU）または金鉱株ETF（GDX）', tag:'satellite', etf:'GLD / GDX' },
+      { name:'米国債',                pct:bonds,       color:'#8b5cf6', detail:'米国中期債ETF。金利低下局面でキャピタルゲインも狙える', tag:'satellite', etf:'IEF / TLT' },
+      { name:'グローバルサウス',      pct:globalSouth, color:'#22c55e', detail:'インド・ブラジル・東南アジアなど新興国ETF。次のブームの震源地', tag:'satellite', etf:'EPI / EEM' },
+      { name:'ビットコイン',          pct:btcAlloc,    color:'#ef4444', detail:'ポートフォリオの1〜5%の範囲内。半減期サイクルに注目', tag:'hedge',     etf:'BTC現物' },
+      { name:'現金（キャッシュ）',    pct:cash,        color:'#f97316', detail:'調整局面での押し目買い用。MMFや短期国債で運用', tag:'hedge',     etf:'MMF / SHV' },
     ],
     params: { shillerPer, earningsYield, bond10y, riskPremium, vix, spFromHigh, hasCape }
   };
@@ -258,9 +259,9 @@ function buildPortfolio(json) {
 
 // ── 円グラフ描画（SVG） ──
 function renderPieChart(allocations) {
-  const size = 280;
-  const cx = size / 2, cy = size / 2, r = 110;
-  let startAngle = -90; // 12時位置から開始
+  const size = 448;
+  const cx = size / 2, cy = size / 2, r = 176;
+  let startAngle = -90;
 
   let paths = '';
   let labels = '';
@@ -277,19 +278,34 @@ function renderPieChart(allocations) {
     const y2 = cy + r * Math.sin((endAngle * Math.PI) / 180);
 
     paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z"
-      fill="${a.color}" stroke="#fff" stroke-width="2"
+      fill="${a.color}"
       style="transition:opacity .2s" onmouseenter="this.style.opacity=0.8" onmouseleave="this.style.opacity=1"/>`;
 
     // ラベル位置（円弧の中間点）
     const midAngle = startAngle + angle / 2;
-    const labelR = r * 0.65;
-    const lx = cx + labelR * Math.cos((midAngle * Math.PI) / 180);
-    const ly = cy + labelR * Math.sin((midAngle * Math.PI) / 180);
+    const midRad = (midAngle * Math.PI) / 180;
 
     if (a.pct >= 5) {
+      // 大きいセグメント: 項目名と%を2行で表示
+      const labelR = r * 0.62;
+      const lx = cx + labelR * Math.cos(midRad);
+      const ly = cy + labelR * Math.sin(midRad);
+      const shortName = a.name.replace('（キャッシュ）','');
+      labels += `<text x="${lx}" y="${ly - 9}" text-anchor="middle" dominant-baseline="central"
+        fill="#fff" font-size="13" font-weight="700" font-family="'DM Sans','Noto Sans JP',sans-serif"
+        style="pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.4)">${shortName}</text>`;
+      labels += `<text x="${lx}" y="${ly + 11}" text-anchor="middle" dominant-baseline="central"
+        fill="#fff" font-size="16" font-weight="700" font-family="'DM Mono',monospace"
+        style="pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.4)">${a.pct}%</text>`;
+    } else if (a.pct >= 3) {
+      // 小さいセグメント: 1行で名前+%
+      const labelR = r * 0.55;
+      const lx = cx + labelR * Math.cos(midRad);
+      const ly = cy + labelR * Math.sin(midRad);
+      const shortName = a.name.replace('（キャッシュ）','');
       labels += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central"
-        fill="#fff" font-size="14" font-weight="700" font-family="'DM Mono',monospace"
-        style="pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.3)">${a.pct}%</text>`;
+        fill="#fff" font-size="11" font-weight="700" font-family="'DM Sans','Noto Sans JP',sans-serif"
+        style="pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.4)">${shortName} ${a.pct}%</text>`;
     }
 
     startAngle = endAngle;
