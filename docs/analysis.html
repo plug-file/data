@@ -580,9 +580,10 @@ function render(json) {
   const main = document.getElementById('mainContent');
   main.innerHTML = '';
 
-  // ── Data source info ──
+  // data-source info は最下部で表示するため変数に保存
+  let dataSourceHtml = '';
   if (d.hasMacroData) {
-    main.innerHTML += `<div class="data-source" style="background:#f0fdf4;border-color:#bbf7d0">
+    dataSourceHtml = `<div class="data-source" style="background:#f0fdf4;border-color:#bbf7d0">
       <div class="data-source-title" style="color:#22c55e">✓ 全指標自動取得中（FRED API連携済み）</div>
       <div class="data-source-text">
         市場データ（yfinance）+ マクロ経済指標（FRED API）の両方を <strong>data.json</strong> から自動読み込みしています。<br>
@@ -591,7 +592,7 @@ function render(json) {
       </div>
     </div>`;
   } else {
-    main.innerHTML += `<div class="data-source">
+    dataSourceHtml = `<div class="data-source">
       <div class="data-source-title">データソース — FRED APIキー未設定</div>
       <div class="data-source-text">
         S&P500・米10年債利回り・VIX・PER等は自動取得済みです。<br>
@@ -951,6 +952,9 @@ function render(json) {
 
   s3 += `</div></div></div>`;
   main.innerHTML += s3;
+
+  // ── Data source info（ページ最下部） ──
+  main.innerHTML += dataSourceHtml;
 
   // ── Footer ──
   main.innerHTML += `<div class="footer">
